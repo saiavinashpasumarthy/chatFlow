@@ -68,24 +68,24 @@ export const NotificationCenter = ({
   const getNotifIcon = (type) => {
     switch (type) {
       case 'email':
-        return <Mail className="w-4 h-4 text-indigo-600" />;
+        return <Mail className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />;
       case 'chat':
-        return <MessageSquare className="w-4 h-4 text-emerald-600" />;
+        return <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case 'system':
       default:
-        return <Sparkles className="w-4 h-4 text-amber-500" />;
+        return <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />;
     }
   };
 
   const getNotifBadgeColor = (type) => {
     switch (type) {
       case 'email':
-        return 'bg-indigo-50 border-indigo-100 text-indigo-700';
+        return 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-100 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300';
       case 'chat':
-        return 'bg-emerald-50 border-emerald-100 text-emerald-700';
+        return 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-100 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300';
       case 'system':
       default:
-        return 'bg-amber-50 border-amber-100 text-amber-700';
+        return 'bg-amber-50 dark:bg-amber-950/60 border-amber-100 dark:border-amber-800 text-amber-700 dark:text-amber-300';
     }
   };
 
@@ -95,20 +95,20 @@ export const NotificationCenter = ({
       role="dialog"
       aria-modal="true"
       aria-label="Notification Center"
-      className="absolute right-0 mt-2 w-80 sm:w-96 md:w-[420px] bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+      className="absolute right-0 mt-2 w-80 sm:w-96 md:w-[420px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 transition-colors"
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 bg-slate-50/80">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 leading-none">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-none">
                 Notifications
               </h3>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 {unreadCount > 0
                   ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
                   : 'All caught up'}
@@ -121,7 +121,7 @@ export const NotificationCenter = ({
               <button
                 type="button"
                 onClick={onMarkAllRead}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 title="Mark all notifications as read"
               >
                 <CheckCheck className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export const NotificationCenter = ({
               <button
                 type="button"
                 onClick={onClearAll}
-                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                 title="Clear all notifications"
                 aria-label="Clear all notifications"
               >
@@ -142,7 +142,7 @@ export const NotificationCenter = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               aria-label="Close notification center"
             >
               <X className="w-4 h-4" />
@@ -165,8 +165,8 @@ export const NotificationCenter = ({
               onClick={() => setFilterTab(tab.id)}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                 filterTab === tab.id
-                  ? 'bg-white text-indigo-700 shadow-2xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-slate-800'
               }`}
             >
               <span>{tab.label}</span>
@@ -174,8 +174,8 @@ export const NotificationCenter = ({
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                     filterTab === tab.id
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'bg-slate-200/80 text-slate-600'
+                      ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                      : 'bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   {tab.count}
@@ -187,7 +187,7 @@ export const NotificationCenter = ({
       </div>
 
       {/* Notifications List */}
-      <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+      <div className="max-h-96 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
         {filteredNotifications.length === 0 ? (
           <div className="p-8">
             <EmptyState
@@ -207,7 +207,9 @@ export const NotificationCenter = ({
             <div
               key={notif.id}
               className={`group relative p-3.5 flex items-start gap-3 transition-colors ${
-                !notif.read ? 'bg-indigo-50/35 hover:bg-indigo-50/50' : 'hover:bg-slate-50'
+                !notif.read
+                  ? 'bg-indigo-50/35 dark:bg-indigo-950/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/50'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
               }`}
             >
               {/* Type Icon Badge */}
@@ -239,23 +241,23 @@ export const NotificationCenter = ({
                 <div className="flex items-center justify-between gap-2">
                   <p
                     className={`text-xs font-semibold leading-tight truncate ${
-                      !notif.read ? 'text-slate-900 font-bold' : 'text-slate-700'
+                      !notif.read ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-700 dark:text-slate-200'
                     }`}
                   >
                     {notif.title}
                   </p>
-                  <span className="text-[10px] text-slate-400 shrink-0">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 shrink-0">
                     {notif.timestamp}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
                   {notif.description}
                 </p>
 
                 {/* Deep Link Hint if applicable */}
                 {notif.targetTab && (
-                  <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-medium text-indigo-600 hover:text-indigo-800">
+                  <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                     <ExternalLink className="w-2.5 h-2.5" />
                     <span>
                       {notif.targetTab === 'inbox'
@@ -272,7 +274,7 @@ export const NotificationCenter = ({
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {!notif.read && (
                   <span
-                    className="w-2 h-2 rounded-full bg-indigo-600"
+                    className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400"
                     title="Unread"
                   />
                 )}
@@ -283,7 +285,7 @@ export const NotificationCenter = ({
                       e.stopPropagation();
                       if (onToggleRead) onToggleRead(notif.id);
                     }}
-                    className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+                    className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     title={notif.read ? 'Mark as unread' : 'Mark as read'}
                     aria-label={notif.read ? 'Mark as unread' : 'Mark as read'}
                   >
@@ -295,7 +297,7 @@ export const NotificationCenter = ({
                       e.stopPropagation();
                       if (onDismissNotification) onDismissNotification(notif.id);
                     }}
-                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors"
+                    className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     title="Dismiss notification"
                     aria-label="Dismiss notification"
                   >
@@ -309,9 +311,9 @@ export const NotificationCenter = ({
       </div>
 
       {/* Footer / Disclaimer */}
-      <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
         <span>Mock Notification Center</span>
-        <span className="text-[10px] text-slate-400">Esc to close</span>
+        <span className="text-[10px] text-slate-400 dark:text-slate-500">Esc to close</span>
       </div>
     </div>
   );

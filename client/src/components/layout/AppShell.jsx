@@ -15,6 +15,7 @@ export const AppShell = ({
   onDismissNotification,
   onClearAllNotifications,
   onNavigate,
+  onLogout,
   unreadEmailCount,
   unreadChatCount,
   children
@@ -23,7 +24,7 @@ export const AppShell = ({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
       {/* Navigation Rail / Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -50,9 +51,10 @@ export const AppShell = ({
           onDismissNotification={onDismissNotification}
           onClearAllNotifications={onClearAllNotifications}
           onNavigate={onNavigate}
+          onLogout={onLogout}
         />
 
-        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 focus:outline-none">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-slate-50 dark:bg-slate-950 focus:outline-none">
           {children}
         </main>
       </div>

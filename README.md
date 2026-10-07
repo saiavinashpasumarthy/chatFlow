@@ -123,13 +123,25 @@ The "Relay" user interface follows these principles:
    - Global floating toast notifications with stack management, auto-dismiss, and accessibility roles (`role="status"`).
    - Simulated workspace synchronization with loading spinners and status toasts.
 
+6. **Public Landing Page & Authentication (New)**:
+   - **Public Landing Page (`#/` or root)**: First view presented to visitors. Showcases headline, feature previews, and prominent "Log in" / "Get started" CTAs.
+   - **Login Screen (`#/login`)**: Client-side validation, password visibility toggle, accessible error messages, and 1-Click Demo Login (`Alex Rivera`).
+   - **Sign-Up Screen (`#/signup`)**: Name, email, department picker, password validation, and return to landing link.
+   - **Protected Route Enforcement**: Directly accessing `#/app/*` redirects unauthenticated visitors to `#/login` with an authentication-required notice.
+   - **Profile Menu Logout**: Prominent "Log out" option in top bar profile dropdown that terminates the demo session and returns to `#/`.
+   - **Session Storage**: Non-sensitive demo session profile stored in `sessionStorage` (cleared on browser tab close or logout; no credentials or passwords stored).
+
 ---
 
 ## Backend Developer Hand-off / Integration Checklist
 
 When the backend developer is ready to wire the client to live services, the following contracts should be established:
 
-- [ ] **Authentication**: Session cookies or Bearer JWT token handshake (`/api/auth/login`, `/api/auth/me`).
+- [ ] **Authentication API**:
+  - `POST /api/auth/login`: Accepts credentials and returns JWT Bearer token or sets `HttpOnly` session cookie.
+  - `POST /api/auth/signup`: Validates new user registration, hashes passwords (bcrypt/argon2), and creates user profile.
+  - `GET /api/auth/me`: Resolves current authenticated session user profile and status.
+  - `POST /api/auth/logout`: Invalidates session/token.
 - [ ] **Email REST API**: Endpoints for fetching folder threads, updating read/starred status, trashing emails, and multipart dispatch (`/api/emails`).
 - [ ] **Chat REST & WebSockets**:
   - Initial message history and channel listings (`/api/conversations`).

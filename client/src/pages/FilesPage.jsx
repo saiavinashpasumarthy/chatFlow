@@ -233,34 +233,34 @@ export const FilesPage = ({
 
   return (
     <div
-      className="flex flex-col h-full overflow-y-auto bg-slate-50/50 p-4 sm:p-6 lg:p-8 text-slate-800"
+      className="flex flex-col h-full overflow-y-auto bg-slate-50/50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 text-slate-800 dark:text-slate-100"
       role="region"
       aria-label="Shared Files & Media"
     >
       {/* Header & Storage Quota */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Shared Files & Media
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Collaborative attachments and assets linked across Relay conversations and email threads.
           </p>
         </div>
 
         {/* Storage Bar Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs w-full md:w-80">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 mb-1.5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-2xs w-full md:w-80">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
             <span className="flex items-center gap-1.5">
-              <HardDrive className="w-3.5 h-3.5 text-indigo-600" />
+              <HardDrive className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               Relay Simulated Storage
             </span>
-            <span className="text-slate-400 font-normal">24.5 / 50 GB</span>
+            <span className="text-slate-400 dark:text-slate-400 font-normal">24.5 / 50 GB</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
             <div className="bg-indigo-600 h-2 rounded-full w-[49%]" />
           </div>
-          <p className="text-[10px] text-slate-400 mt-1.5">
+          <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-1.5">
             Local session allocation • 51% available
           </p>
         </div>
@@ -274,10 +274,10 @@ export const FilesPage = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative mb-6 border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all cursor-pointer bg-white ${
+        className={`relative mb-6 border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all cursor-pointer bg-white dark:bg-slate-900 ${
           isDragging
-            ? 'border-indigo-600 bg-indigo-50/50 scale-[1.008]'
-            : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50/60'
+            ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 scale-[1.008]'
+            : 'border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
         }`}
       >
         <input
@@ -290,13 +290,13 @@ export const FilesPage = ({
 
         {uploadProgress ? (
           <div className="flex flex-col items-center justify-center max-w-sm mx-auto pointer-events-none">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 animate-pulse">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 animate-pulse">
               <UploadCloud className="w-5 h-5" />
             </div>
-            <p className="text-xs font-semibold text-slate-900 truncate max-w-xs">
+            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate max-w-xs">
               Simulating upload: {uploadProgress.name}
             </p>
-            <div className="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
               <div
                 className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress.percent}%` }}
@@ -310,18 +310,18 @@ export const FilesPage = ({
           <div className="flex flex-col items-center justify-center pointer-events-none">
             <div
               className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2.5 transition-transform ${
-                isDragging ? 'bg-indigo-600 text-white scale-110' : 'bg-indigo-50 text-indigo-600'
+                isDragging ? 'bg-indigo-600 text-white scale-110' : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
               }`}
             >
               <UploadCloud className="w-6 h-6" />
             </div>
-            <p className="text-sm font-bold text-slate-900">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
               {isDragging ? 'Drop file to stage local preview' : 'Drop files here or click to browse'}
             </p>
             <p className="text-xs text-slate-400 mt-0.5">
               Supports documents, design binaries, code files, and images up to 50MB
             </p>
-            <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+            <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
               Client-side simulation only — files are not stored on remote servers
             </span>
           </div>
@@ -331,7 +331,7 @@ export const FilesPage = ({
       {/* ─────────────────────────────────────────────────────────────
           SEARCH, TYPE FILTER TABS, AND SORT CONTROLS
       ─────────────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-2xs space-y-3.5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-2xs space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 max-w-md">
@@ -341,13 +341,13 @@ export const FilesPage = ({
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               placeholder="Search by filename, author, or context..."
-              className="w-full pl-9 pr-9 py-1.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-900 placeholder-slate-400 transition-all"
+              className="w-full pl-9 pr-9 py-1.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
             />
             {localSearch && (
               <button
                 type="button"
                 onClick={() => setLocalSearch('')}
-                className="absolute right-3 top-2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ export const FilesPage = ({
                 setSortField(field);
                 setSortOrder(order);
               }}
-              className="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="date-desc">Newest First</option>
               <option value="date-asc">Oldest First</option>
@@ -379,7 +379,7 @@ export const FilesPage = ({
         </div>
 
         {/* Type Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-slate-100">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 border-t border-slate-100 dark:border-slate-800">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pl-1 shrink-0">
             File Type:
           </span>
@@ -398,13 +398,13 @@ export const FilesPage = ({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
                   isSelected
                     ? 'bg-indigo-600 text-white shadow-2xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <span>{type}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-600'
+                    isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                   }`}
                 >
                   {count}
@@ -418,7 +418,7 @@ export const FilesPage = ({
       {/* ─────────────────────────────────────────────────────────────
           FILES DATA TABLE (WITH SORTABLE HEADERS)
       ─────────────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">
         {sortedFiles.length === 0 ? (
           <div className="p-8">
             <EmptyState
@@ -441,19 +441,19 @@ export const FilesPage = ({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 text-[11px] uppercase tracking-wider select-none">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider select-none">
                 <tr>
                   {/* Name column */}
                   <th
-                    className="py-3 px-4 cursor-pointer hover:text-slate-800 transition-colors"
+                    className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-white transition-colors"
                     onClick={() => toggleSort('name')}
                   >
                     <div className="flex items-center gap-1.5">
                       <span>File Name</span>
                       {sortField === 'name' ? (
-                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 dark:text-slate-600" />
                       )}
                     </div>
                   </th>
@@ -466,45 +466,45 @@ export const FilesPage = ({
 
                   {/* Size column */}
                   <th
-                    className="py-3 px-4 cursor-pointer hover:text-slate-800 transition-colors"
+                    className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-white transition-colors"
                     onClick={() => toggleSort('size')}
                   >
                     <div className="flex items-center gap-1.5">
                       <span>Size</span>
                       {sortField === 'size' ? (
-                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 dark:text-slate-600" />
                       )}
                     </div>
                   </th>
 
                   {/* Sender column */}
                   <th
-                    className="py-3 px-4 cursor-pointer hover:text-slate-800 transition-colors"
+                    className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-white transition-colors"
                     onClick={() => toggleSort('sender')}
                   >
                     <div className="flex items-center gap-1.5">
                       <span>Shared By</span>
                       {sortField === 'sender' ? (
-                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 dark:text-slate-600" />
                       )}
                     </div>
                   </th>
 
                   {/* Date column */}
                   <th
-                    className="py-3 px-4 cursor-pointer hover:text-slate-800 transition-colors"
+                    className="py-3 px-4 cursor-pointer hover:text-slate-800 dark:hover:text-white transition-colors"
                     onClick={() => toggleSort('date')}
                   >
                     <div className="flex items-center gap-1.5">
                       <span>Date</span>
                       {sortField === 'date' ? (
-                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
+                        sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> : <ArrowDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300" />
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 dark:text-slate-600" />
                       )}
                     </div>
                   </th>
@@ -514,20 +514,20 @@ export const FilesPage = ({
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {sortedFiles.map((file) => (
                   <tr
                     key={file.id}
                     onClick={() => setSelectedFile(file)}
-                    className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
                   >
                     {/* Name & Icon */}
-                    <td className="py-3.5 px-4 font-semibold text-slate-900">
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-slate-100 shrink-0 group-hover:bg-indigo-50 transition-colors">
+                        <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/60 transition-colors">
                           {getFileIcon(file.type)}
                         </div>
-                        <span className="truncate max-w-xs group-hover:text-indigo-600 transition-colors">
+                        <span className="truncate max-w-xs group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                           {file.name}
                         </span>
                       </div>
@@ -535,7 +535,7 @@ export const FilesPage = ({
 
                     {/* Type badge */}
                     <td className="py-3.5 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 capitalize">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize">
                         {file.type}
                       </span>
                     </td>
@@ -551,7 +551,7 @@ export const FilesPage = ({
                               onNavigateTab(file.relatedContext.type === 'email' ? 'inbox' : 'chat');
                             }
                           }}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 transition-colors max-w-xs truncate"
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-slate-700 dark:text-slate-300 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors max-w-xs truncate"
                           title={`Navigate to ${file.relatedContext.type}: ${file.relatedContext.title}`}
                         >
                           {file.relatedContext.type === 'email' ? (
@@ -562,19 +562,19 @@ export const FilesPage = ({
                           <span className="truncate">{file.relatedContext.title}</span>
                         </button>
                       ) : (
-                        <span className="text-slate-400 text-xs">—</span>
+                        <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
                       )}
                     </td>
 
                     {/* Size */}
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">
+                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
                       {file.size}
                     </td>
 
                     {/* Shared By */}
-                    <td className="py-3.5 px-4 text-slate-700 font-medium">
+                    <td className="py-3.5 px-4 text-slate-700 dark:text-slate-200 font-medium">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">
                           {file.sharedBy.split(' ').map((n) => n[0]).join('')}
                         </div>
                         <span className="truncate">{file.sharedBy}</span>
@@ -582,7 +582,7 @@ export const FilesPage = ({
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-4 text-slate-400 text-xs">
+                    <td className="py-3.5 px-4 text-slate-400 dark:text-slate-500 text-xs">
                       {file.updatedAt}
                     </td>
 
@@ -595,7 +595,7 @@ export const FilesPage = ({
                             e.stopPropagation();
                             setSelectedFile(file);
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="Preview details"
                           aria-label={`Preview ${file.name}`}
                         >
@@ -611,7 +611,7 @@ export const FilesPage = ({
                               type: 'info'
                             });
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                           title="Download"
                           aria-label={`Download ${file.name}`}
                         >
@@ -623,7 +623,7 @@ export const FilesPage = ({
                             e.stopPropagation();
                             handleDeleteFile(file.id, file.name);
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="Delete"
                           aria-label={`Delete ${file.name}`}
                         >
@@ -647,7 +647,7 @@ export const FilesPage = ({
           role="dialog"
           aria-modal="true"
           aria-label="File preview drawer"
-          className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 dark:bg-black/60 backdrop-blur-xs"
         >
           <div
             className="fixed inset-0"
@@ -655,16 +655,16 @@ export const FilesPage = ({
             aria-hidden="true"
           />
 
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl border-l border-slate-200 flex flex-col z-10 animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col z-10 animate-in slide-in-from-right duration-200">
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900/80">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 File Details & Preview
               </span>
               <button
                 type="button"
                 onClick={() => setSelectedFile(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 aria-label="Close file preview"
               >
                 <X className="w-4 h-4" />
@@ -672,15 +672,15 @@ export const FilesPage = ({
             </div>
 
             {/* File Icon & Info Hero */}
-            <div className="p-6 border-b border-slate-100 flex flex-col items-center text-center">
-              <div className="p-4 rounded-3xl bg-indigo-50 border border-indigo-100 text-indigo-600 mb-3 shadow-xs">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
+              <div className="p-4 rounded-3xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 mb-3 shadow-xs">
                 {getFileIcon(selectedFile.type)}
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 truncate max-w-sm">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate max-w-sm">
                 {selectedFile.name}
               </h2>
               <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 capitalize">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize">
                   {selectedFile.type}
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
@@ -713,7 +713,7 @@ export const FilesPage = ({
                       type: 'info'
                     })
                   }
-                  className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   title="Share link"
                   aria-label="Share file"
                 >
@@ -722,7 +722,7 @@ export const FilesPage = ({
                 <button
                   type="button"
                   onClick={() => handleDeleteFile(selectedFile.id, selectedFile.name)}
-                  className="p-2.5 rounded-xl border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                   title="Delete file"
                   aria-label="Delete file"
                 >
@@ -738,7 +738,7 @@ export const FilesPage = ({
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Sample Content Preview
                 </h3>
-                <div className="p-3.5 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px] leading-relaxed overflow-x-auto shadow-2xs">
+                <div className="p-3.5 rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 dark:text-slate-200 font-mono text-[11px] leading-relaxed overflow-x-auto shadow-2xs border border-transparent dark:border-slate-800">
                   {selectedFile.previewSnippet ||
                     `Binary payload for ${selectedFile.name}. Rendering sample mock representation.`}
                 </div>
@@ -746,19 +746,19 @@ export const FilesPage = ({
 
               {/* Origin / Association Details */}
               {selectedFile.relatedContext && (
-                <div className="p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-100">
-                  <h3 className="text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <div className="p-3.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60">
+                  <h3 className="text-[11px] font-bold text-indigo-900 dark:text-indigo-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                     {selectedFile.relatedContext.type === 'email' ? (
-                      <Mail className="w-3.5 h-3.5 text-indigo-600" />
+                      <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                     ) : (
-                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     )}
                     <span>Associated {selectedFile.relatedContext.type === 'email' ? 'Email Thread' : 'Chat Channel'}</span>
                   </h3>
-                  <p className="font-semibold text-slate-800">
+                  <p className="font-semibold text-slate-800 dark:text-white">
                     {selectedFile.relatedContext.title}
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     {selectedFile.relatedContext.snippet}
                   </p>
                   <button
@@ -769,7 +769,7 @@ export const FilesPage = ({
                         setSelectedFile(null);
                       }
                     }}
-                    className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800"
+                    className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
                   >
                     <span>View in {selectedFile.relatedContext.type === 'email' ? 'Inbox' : 'Chat'}</span>
                     <ExternalLink className="w-3 h-3" />
@@ -778,28 +778,28 @@ export const FilesPage = ({
               )}
 
               {/* Metadata list */}
-              <div className="space-y-3 pt-2 border-t border-slate-100">
+              <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Metadata
                 </h3>
 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="flex items-center gap-1.5 text-slate-400">
                     <User className="w-3.5 h-3.5" /> Uploader
                   </span>
-                  <span className="font-semibold text-slate-800">{selectedFile.sharedBy}</span>
+                  <span className="font-semibold text-slate-800 dark:text-white">{selectedFile.sharedBy}</span>
                 </div>
 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="flex items-center gap-1.5 text-slate-400">
                     <Clock className="w-3.5 h-3.5" /> Date Modified
                   </span>
-                  <span>{selectedFile.updatedAt}</span>
+                  <span className="text-slate-800 dark:text-slate-200">{selectedFile.updatedAt}</span>
                 </div>
 
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="text-slate-400">Security Scan</span>
-                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Verified Clean
                   </span>
                 </div>

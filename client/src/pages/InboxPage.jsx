@@ -500,7 +500,7 @@ export const InboxPage = ({
 
   return (
     <div
-      className="flex flex-col lg:flex-row h-full overflow-hidden bg-white text-slate-800"
+      className="flex flex-col lg:flex-row h-full overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors"
       role="region"
       aria-label="Email Client"
     >
@@ -508,7 +508,7 @@ export const InboxPage = ({
       {/* ─────────────────────────────────────────────────────────────
           COLUMN 1: Mail Folders & Tags Navigation
       ─────────────────────────────────────────────────────────────── */}
-      <div className="w-full lg:w-56 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/70 p-3 lg:p-4 shrink-0 flex flex-col justify-between overflow-x-auto lg:overflow-y-auto">
+      <div className="w-full lg:w-56 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 p-3 lg:p-4 shrink-0 flex flex-col justify-between overflow-x-auto lg:overflow-y-auto">
         <div className="space-y-4 w-full">
           {/* Compose CTA Button */}
           <button
@@ -539,15 +539,15 @@ export const InboxPage = ({
                   }}
                   className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors shrink-0 lg:shrink lg:w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-700 font-semibold shadow-2xs'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <div className="flex items-center gap-2.5">
                     <Icon
                       className={`w-4 h-4 ${
-                        isActive ? 'text-indigo-600' : 'text-slate-400'
+                        isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                       }`}
                     />
                     <span>{folder.label}</span>
@@ -556,8 +556,8 @@ export const InboxPage = ({
                     <span
                       className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                         isActive
-                          ? 'bg-indigo-200/70 text-indigo-800'
-                          : 'bg-slate-200/70 text-slate-700'
+                          ? 'bg-indigo-200/70 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200'
+                          : 'bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {folder.count}
@@ -569,16 +569,16 @@ export const InboxPage = ({
           </nav>
 
           {/* Dynamic Tags Filter Section (Desktop) */}
-          <div className="hidden lg:block pt-3 border-t border-slate-200/70">
+          <div className="hidden lg:block pt-3 border-t border-slate-200/70 dark:border-slate-800">
             <div className="flex items-center justify-between px-2 mb-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 Tags
               </span>
               {selectedTag && (
                 <button
                   type="button"
                   onClick={() => setSelectedTag(null)}
-                  className="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium"
+                  className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
                 >
                   Clear
                 </button>
@@ -590,12 +590,12 @@ export const InboxPage = ({
                 onClick={() => setSelectedTag(null)}
                 className={`flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedTag === null
-                    ? 'bg-slate-200/60 text-slate-900 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-slate-200/60 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 <span>All Tags</span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500">
                   {emails.length}
                 </span>
               </button>
@@ -611,19 +611,19 @@ export const InboxPage = ({
                     }
                     className={`flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       isSelected
-                        ? 'bg-indigo-50 text-indigo-700 font-semibold'
-                        : 'text-slate-600 hover:bg-slate-100'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <Tag
                         className={`w-3 h-3 ${
-                          isSelected ? 'text-indigo-600' : 'text-slate-400'
+                          isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                         }`}
                       />
                       <span>{tag}</span>
                     </div>
-                    <span className="text-[10px] text-slate-400">{count}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">{count}</span>
                   </button>
                 );
               })}
@@ -632,16 +632,16 @@ export const InboxPage = ({
         </div>
 
         {/* Keyboard Helper Link */}
-        <div className="pt-2 hidden lg:flex items-center justify-between border-t border-slate-200/70 text-slate-400">
+        <div className="pt-2 hidden lg:flex items-center justify-between border-t border-slate-200/70 dark:border-slate-800 text-slate-400 dark:text-slate-500">
           <button
             type="button"
             onClick={() => setShowShortcutsModal(true)}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors p-1 rounded-lg hover:bg-slate-100"
+            className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             aria-label="View keyboard shortcuts"
           >
             <Keyboard className="w-3.5 h-3.5" />
             <span>Shortcuts</span>
-            <kbd className="px-1 text-[10px] bg-slate-200 text-slate-600 rounded">
+            <kbd className="px-1 text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">
               ?
             </kbd>
           </button>
@@ -652,17 +652,17 @@ export const InboxPage = ({
           COLUMN 2: Thread List with Tag Filter Chips
       ─────────────────────────────────────────────────────────────── */}
       <div
-        className={`w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col h-full shrink-0 overflow-hidden ${
+        className={`w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-full shrink-0 overflow-hidden ${
           mobileView === 'reader' ? 'hidden lg:flex' : 'flex'
         }`}
       >
         {/* Thread List Header */}
-        <div className="px-4 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-2">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider capitalize">
+            <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider capitalize">
               {selectedFolder}
             </span>
-            <span className="text-[11px] text-slate-400 font-medium">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
               ({filteredEmails.length})
             </span>
           </div>
@@ -672,19 +672,19 @@ export const InboxPage = ({
               type="button"
               onClick={handleSimulateRefresh}
               disabled={isRefreshing}
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title="Simulate mailbox sync"
               aria-label="Simulate mailbox sync"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`}
+                className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600 dark:text-indigo-400' : ''}`}
               />
             </button>
             {filteredEmails.some((e) => e.unread) && (
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded hover:bg-indigo-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 px-2 py-1 rounded hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 title="Mark all as read in current folder"
               >
                 Mark all read
@@ -695,8 +695,8 @@ export const InboxPage = ({
 
         {/* Tag Filter Chips Bar */}
         {allTags.length > 0 && (
-          <div className="px-3 py-2 bg-slate-50/50 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1 shrink-0">
+          <div className="px-3 py-2 bg-slate-50/50 dark:bg-slate-850/60 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider pl-1 shrink-0">
               Tag:
             </span>
             <button
@@ -704,8 +704,8 @@ export const InboxPage = ({
               onClick={() => setSelectedTag(null)}
               className={`px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors ${
                 selectedTag === null
-                  ? 'bg-slate-700 text-white shadow-2xs'
-                  : 'bg-slate-200/70 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-slate-700 dark:bg-slate-200 text-white dark:text-slate-900 shadow-2xs'
+                  : 'bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               All
@@ -720,7 +720,7 @@ export const InboxPage = ({
                 className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors ${
                   selectedTag === tag
                     ? 'bg-indigo-600 text-white shadow-2xs'
-                    : 'bg-slate-200/70 text-slate-600 hover:bg-slate-200'
+                    : 'bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 <span>{tag}</span>
@@ -735,7 +735,7 @@ export const InboxPage = ({
           ref={threadListRef}
           role="listbox"
           aria-label="Email list"
-          className="flex-1 overflow-y-auto divide-y divide-slate-100"
+          className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800"
         >
           {isRefreshing ? (
             <ThreadListSkeleton count={4} />
@@ -794,15 +794,15 @@ export const InboxPage = ({
                   }}
                   className={`group relative w-full text-left p-3.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     isSelected
-                      ? 'bg-indigo-50/60 border-l-4 border-indigo-600'
-                      : 'hover:bg-slate-50/80 bg-white'
+                      ? 'bg-indigo-50/60 dark:bg-indigo-950/50 border-l-4 border-indigo-600 dark:border-indigo-500'
+                      : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/60 bg-white dark:bg-slate-900'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full mb-1">
                     <div className="flex items-center gap-2 min-w-0">
                       {email.unread ? (
                         <span
-                          className="w-2 h-2 rounded-full bg-indigo-600 shrink-0"
+                          className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"
                           title="Unread"
                         />
                       ) : (
@@ -811,8 +811,8 @@ export const InboxPage = ({
                       <span
                         className={`text-xs truncate ${
                           email.unread
-                            ? 'font-bold text-slate-900'
-                            : 'font-medium text-slate-700'
+                            ? 'font-bold text-slate-900 dark:text-white'
+                            : 'font-medium text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         {email.senderName}
@@ -820,7 +820,7 @@ export const InboxPage = ({
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">
                         {email.timestamp}
                       </span>
                     </div>
@@ -829,14 +829,14 @@ export const InboxPage = ({
                   <p
                     className={`text-xs truncate mb-1 ${
                       email.unread
-                        ? 'font-semibold text-slate-900'
-                        : 'text-slate-800'
+                        ? 'font-semibold text-slate-900 dark:text-white'
+                        : 'text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     {email.subject}
                   </p>
 
-                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                     {email.preview}
                   </p>
 
@@ -844,7 +844,7 @@ export const InboxPage = ({
                   <div className="flex items-center justify-between mt-2 pt-1">
                     <div className="flex items-center gap-1.5 overflow-hidden">
                       {email.attachmentsCount && (
-                        <span className="flex items-center gap-0.5 text-[10px] text-slate-400">
+                        <span className="flex items-center gap-0.5 text-[10px] text-slate-400 dark:text-slate-500">
                           <Paperclip className="w-3 h-3" />
                           {email.attachmentsCount}
                         </span>
@@ -860,7 +860,7 @@ export const InboxPage = ({
                           className={`px-1.5 py-0.2 rounded text-[10px] font-medium transition-colors ${
                             selectedTag === t
                               ? 'bg-indigo-600 text-white'
-                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                           }`}
                         >
                           {t}
@@ -873,7 +873,7 @@ export const InboxPage = ({
                       <button
                         type="button"
                         onClick={(e) => handleToggleStar(email.id, e)}
-                        className="p-1 rounded-md text-slate-400 hover:text-amber-500 hover:bg-slate-100"
+                        className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                         aria-label={email.starred ? 'Unstar' : 'Star'}
                         title={email.starred ? 'Unstar (S)' : 'Star (S)'}
                       >
@@ -881,7 +881,7 @@ export const InboxPage = ({
                           className={`w-3.5 h-3.5 ${
                             email.starred
                               ? 'text-amber-400 fill-amber-400'
-                              : 'text-slate-300'
+                              : 'text-slate-300 dark:text-slate-600'
                           }`}
                         />
                       </button>
@@ -889,7 +889,7 @@ export const InboxPage = ({
                       <button
                         type="button"
                         onClick={(e) => handleToggleRead(email.id, e)}
-                        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                        className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                         aria-label={
                           email.unread ? 'Mark as read' : 'Mark as unread'
                         }
@@ -900,9 +900,9 @@ export const InboxPage = ({
                         }
                       >
                         {email.unread ? (
-                          <MailOpen className="w-3.5 h-3.5 text-indigo-600" />
+                          <MailOpen className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                         ) : (
-                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                         )}
                       </button>
 
@@ -915,7 +915,7 @@ export const InboxPage = ({
                             handleMoveToTrash(email.id, e);
                           }
                         }}
-                        className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100"
+                        className="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                         aria-label="Delete message"
                         title="Delete (Delete / #)"
                       >
@@ -934,33 +934,33 @@ export const InboxPage = ({
           COLUMN 3: Detailed Message Reader
       ─────────────────────────────────────────────────────────────── */}
       <div
-        className={`flex-1 flex flex-col h-full overflow-hidden bg-slate-50/30 ${
+        className={`flex-1 flex flex-col h-full overflow-hidden bg-slate-50/30 dark:bg-slate-950/40 ${
           mobileView === 'list' ? 'hidden lg:flex' : 'flex'
         }`}
       >
         {selectedEmail ? (
-          <div className="flex flex-col h-full overflow-y-auto bg-white">
+          <div className="flex flex-col h-full overflow-y-auto bg-white dark:bg-slate-900 transition-colors">
             {/* Mobile Back Button bar */}
-            <div className="lg:hidden px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+            <div className="lg:hidden px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setMobileView('list')}
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white"
                 aria-label="Back to email list"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to {selectedFolder}</span>
               </button>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 {selectedEmail.timestamp}
               </span>
             </div>
 
             {/* Header & Action Toolbar */}
-            <div className="p-4 sm:p-6 border-b border-slate-200 bg-white">
+            <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="text-base sm:text-xl font-bold text-slate-900 leading-snug">
+                  <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white leading-snug">
                     {selectedEmail.subject}
                   </h2>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -969,7 +969,7 @@ export const InboxPage = ({
                         key={tag}
                         type="button"
                         onClick={() => setSelectedTag(tag)}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
                       >
                         <Tag className="w-3 h-3" />
                         <span>{tag}</span>
@@ -979,11 +979,11 @@ export const InboxPage = ({
                 </div>
 
                 {/* Reader Action Toolbar */}
-                <div className="flex items-center gap-1.5 shrink-0 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1.5 shrink-0 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
                   <button
                     type="button"
                     onClick={() => handleToggleStar(selectedEmail.id)}
-                    className="p-2 text-slate-500 hover:text-amber-500 hover:bg-white rounded-lg transition-colors"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-amber-500 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors"
                     aria-label={selectedEmail.starred ? 'Unstar' : 'Star'}
                     title={selectedEmail.starred ? 'Unstar (S)' : 'Star (S)'}
                   >
@@ -991,7 +991,7 @@ export const InboxPage = ({
                       className={`w-4 h-4 ${
                         selectedEmail.starred
                           ? 'text-amber-400 fill-amber-400'
-                          : 'text-slate-400'
+                          : 'text-slate-400 dark:text-slate-500'
                       }`}
                     />
                   </button>
@@ -999,7 +999,7 @@ export const InboxPage = ({
                   <button
                     type="button"
                     onClick={() => handleToggleRead(selectedEmail.id)}
-                    className="p-2 text-slate-500 hover:text-slate-800 hover:bg-white rounded-lg transition-colors"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors"
                     aria-label={
                       selectedEmail.unread ? 'Mark as read' : 'Mark as unread'
                     }
@@ -1010,9 +1010,9 @@ export const InboxPage = ({
                     }
                   >
                     {selectedEmail.unread ? (
-                      <MailOpen className="w-4 h-4 text-indigo-600" />
+                      <MailOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                     ) : (
-                      <Mail className="w-4 h-4 text-slate-400" />
+                      <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                     )}
                   </button>
 
@@ -1021,7 +1021,7 @@ export const InboxPage = ({
                       <button
                         type="button"
                         onClick={() => handleRestoreFromTrash(selectedEmail.id)}
-                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors"
                         aria-label="Restore to Inbox"
                         title="Restore to Inbox"
                       >
@@ -1032,18 +1032,18 @@ export const InboxPage = ({
                         onClick={() =>
                           handleDeletePermanently(selectedEmail.id)
                         }
-                        className="p-2 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors"
                         aria-label="Delete permanently"
                         title="Delete permanently"
                       >
-                        <Trash2 className="w-4 h-4 text-rose-500" />
+                        <Trash2 className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                       </button>
                     </>
                   ) : (
                     <button
                       type="button"
                       onClick={() => handleMoveToTrash(selectedEmail.id)}
-                      className="p-2 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition-colors"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors"
                       aria-label="Move to Trash"
                       title="Move to Trash (Delete / #)"
                     >
@@ -1054,44 +1054,44 @@ export const InboxPage = ({
               </div>
 
               {/* Sender Details */}
-              <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-sm flex items-center justify-center shadow-xs">
                     {selectedEmail.senderName.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
                       {selectedEmail.senderName}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-slate-400 dark:text-slate-500">
                       From: {selectedEmail.senderEmail} • To:{' '}
                       {selectedEmail.recipient}
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-slate-400 dark:text-slate-500">
                   {selectedEmail.timestamp}
                 </div>
               </div>
             </div>
 
             {/* Email Body */}
-            <div className="p-6 sm:p-8 flex-1 bg-white">
-              <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-line max-w-3xl">
+            <div className="p-6 sm:p-8 flex-1 bg-white dark:bg-slate-900">
+              <div className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line max-w-3xl">
                 {selectedEmail.body}
               </div>
 
               {/* Attachments preview */}
               {selectedEmail.attachmentsCount && (
-                <div className="mt-8 pt-6 border-t border-slate-100">
-                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                     Attached Files ({selectedEmail.attachmentsCount})
                   </h4>
                   <div className="flex flex-wrap gap-3">
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700">
-                      <Paperclip className="w-4 h-4 text-indigo-600" />
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200">
+                      <Paperclip className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                       <span>Specifications-Brief.pdf</span>
-                      <span className="text-slate-400 text-[11px]">
+                      <span className="text-slate-400 dark:text-slate-500 text-[11px]">
                         (2.4 MB)
                       </span>
                     </div>
@@ -1101,7 +1101,7 @@ export const InboxPage = ({
             </div>
 
             {/* Bottom Actions */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-3">
+            <div className="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -1109,7 +1109,7 @@ export const InboxPage = ({
                   setComposerSubject(`Re: ${selectedEmail.subject}`);
                   setIsComposing(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-colors"
               >
                 <Reply className="w-3.5 h-3.5" />
                 <span>Reply</span>
@@ -1123,7 +1123,7 @@ export const InboxPage = ({
                   );
                   setIsComposing(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-colors"
               >
                 <Forward className="w-3.5 h-3.5" />
                 <span>Forward</span>
@@ -1151,16 +1151,16 @@ export const InboxPage = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="compose-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/80">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80">
               <div className="flex items-center gap-2">
-                <h3 id="compose-modal-title" className="text-sm font-semibold text-slate-800">
+                <h3 id="compose-modal-title" className="text-sm font-semibold text-slate-800 dark:text-white">
                   New Message (Relay Composer)
                 </h3>
                 {lastDraftSavedAt && (
-                  <span className="flex items-center gap-1 text-[11px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-md">
+                  <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                     <Save className="w-3 h-3" />
                     <span>Saved {lastDraftSavedAt}</span>
                   </span>
@@ -1169,7 +1169,7 @@ export const InboxPage = ({
               <button
                 type="button"
                 onClick={() => setIsComposing(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 aria-label="Close composer"
               >
                 <X className="w-4 h-4" />
@@ -1178,7 +1178,7 @@ export const InboxPage = ({
 
             <form onSubmit={handleSendEmail} className="p-5 space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   To
                 </label>
                 <input
@@ -1189,12 +1189,12 @@ export const InboxPage = ({
                     handleUpdateComposerField('to', e.target.value)
                   }
                   placeholder="recipient@relay.dev"
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Subject
                 </label>
                 <input
@@ -1205,12 +1205,12 @@ export const InboxPage = ({
                     handleUpdateComposerField('subject', e.target.value)
                   }
                   placeholder="Subject line..."
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Message
                 </label>
                 <textarea
@@ -1221,12 +1221,12 @@ export const InboxPage = ({
                     handleUpdateComposerField('body', e.target.value)
                   }
                   placeholder="Type your message... Draft is auto-saved locally."
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 resize-none"
                 />
               </div>
 
               <div className="flex items-center justify-between pt-2">
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500">
                   {composeSuccess
                     ? 'Dispatched to Sent folder!'
                     : draftSaveStatus === 'saved'
@@ -1237,14 +1237,14 @@ export const InboxPage = ({
                   <button
                     type="button"
                     onClick={handleDiscardDraft}
-                    className="px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                    className="px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
                   >
                     Discard Draft
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsComposing(false)}
-                    className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl"
+                    className="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                   >
                     Save & Close
                   </button>
@@ -1277,91 +1277,91 @@ export const InboxPage = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="shortcuts-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/80">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80">
               <div className="flex items-center gap-2">
-                <Keyboard className="w-4 h-4 text-indigo-600" />
-                <h3 id="shortcuts-modal-title" className="text-sm font-semibold text-slate-800">
+                <Keyboard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <h3 id="shortcuts-modal-title" className="text-sm font-semibold text-slate-800 dark:text-white">
                   Keyboard Shortcuts
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowShortcutsModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60"
+                className="p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="p-5 space-y-3 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Next / Previous message</span>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Next / Previous message</span>
                 <div className="flex items-center gap-1 font-mono">
-                  <kbd className="px-2 py-0.5 bg-slate-100 rounded border">↓</kbd>
+                  <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">↓</kbd>
                   <span>/</span>
-                  <kbd className="px-2 py-0.5 bg-slate-100 rounded border">↑</kbd>
-                  <span className="text-slate-400 text-[10px]">or j / k</span>
+                  <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">↑</kbd>
+                  <span className="text-slate-400 dark:text-slate-500 text-[10px]">or j / k</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Open message (mobile/reader)</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Open message (mobile/reader)</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   Enter
                 </kbd>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Star / Unstar message</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Star / Unstar message</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   s
                 </kbd>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Mark Read / Unread</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Mark Read / Unread</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   u
                 </kbd>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Move to Trash</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Move to Trash</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   Delete / #
                 </kbd>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Compose new message</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Compose new message</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   c
                 </kbd>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600">Close dialog or Back to List</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-300">Close dialog or Back to List</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   Esc
                 </kbd>
               </div>
 
               <div className="flex items-center justify-between py-1">
-                <span className="text-slate-600">Focus global search</span>
-                <kbd className="px-2 py-0.5 bg-slate-100 rounded border font-mono">
+                <span className="text-slate-600 dark:text-slate-300">Focus global search</span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 font-mono">
                   /
                 </kbd>
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 border-t border-slate-100 text-right">
+            <div className="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 text-right">
               <button
                 type="button"
                 onClick={() => setShowShortcutsModal(false)}
-                className="px-4 py-1.5 text-xs font-semibold rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors"
+                className="px-4 py-1.5 text-xs font-semibold rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
               >
                 Close
               </button>

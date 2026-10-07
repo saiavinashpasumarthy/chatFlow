@@ -7,8 +7,17 @@
     border-color: theme('colors.slate.200');
   }
 
+  .dark * {
+    border-color: theme('colors.slate.800');
+  }
+
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-slate-50 text-slate-900 transition-colors duration-150;
+  }
+
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
   }
 }
 
@@ -29,4 +38,12 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: theme('colors.slate.400');
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: theme('colors.slate.700');
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.slate.600');
 }

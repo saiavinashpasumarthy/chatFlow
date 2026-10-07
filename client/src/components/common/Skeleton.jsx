@@ -3,7 +3,7 @@ import React from 'react';
 export const Skeleton = ({ className = '', ...props }) => {
   return (
     <div
-      className={`animate-pulse bg-slate-200/80 rounded-lg ${className}`}
+      className={`animate-pulse bg-slate-200/80 dark:bg-slate-800 rounded-lg ${className}`}
       {...props}
     />
   );
@@ -11,7 +11,7 @@ export const Skeleton = ({ className = '', ...props }) => {
 
 export const ThreadListSkeleton = ({ count = 5 }) => {
   return (
-    <div className="divide-y divide-slate-100">
+    <div className="divide-y divide-slate-100 dark:divide-slate-800">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="p-3.5 space-y-2.5">
           <div className="flex items-center justify-between">
@@ -39,7 +39,7 @@ export const ChatMessageSkeleton = ({ count = 4 }) => {
             <Skeleton className="h-3 w-20" />
             <Skeleton
               className={`h-12 w-full rounded-2xl ${
-                i % 2 === 1 ? 'bg-indigo-100/70' : 'bg-slate-200/80'
+                i % 2 === 1 ? 'bg-indigo-100/70 dark:bg-indigo-950/60' : 'bg-slate-200/80 dark:bg-slate-800'
               }`}
             />
           </div>
