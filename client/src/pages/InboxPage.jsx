@@ -29,6 +29,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import { EmptyState } from '../components/common/EmptyState';
 import { ThreadListSkeleton } from '../components/common/Skeleton';
+import { auth } from '../config/firebase';
 
 export const InboxPage = ({
   emails,
@@ -165,12 +166,12 @@ export const InboxPage = ({
   const filteredEmails = useMemo(() => {
     return emails.filter((email) => {
       const matchesFolder =
-        selectedFolder === 'starred'
-          ? email.starred && email.folder !== 'trash'
-          : email.folder === selectedFolder;
+  selectedFolder === 'starred'
+    ? email.starred && email.folder !== 'trash'
+    : email.folder === selectedFolder;
 
-      const matchesTag =
-        !selectedTag || (email.tags && email.tags.includes(selectedTag));
+const matchesTag =
+  !selectedTag || email.tags?.includes(selectedTag);
 
       const matchesSearch =
         searchQuery.trim() === '' ||
@@ -187,18 +188,17 @@ export const InboxPage = ({
     });
   }, [emails, selectedFolder, selectedTag, searchQuery]);
 
-  // Keep a valid email selected
-  useEffect(() => {
-    if (filteredEmails.length > 0) {
-      const exists = filteredEmails.some((e) => e.id === selectedEmailId);
-      if (!exists) {
-        setSelectedEmailId(filteredEmails[0].id);
-      }
-    } else {
-      setSelectedEmailId('');
-    }
-  }, [filteredEmails, selectedEmailId]);
-
+// Keep the current selection only if it still exists.
+// Do not automatically open/select the first email.
+useEffect(() => {
+  if (
+    selectedEmailId &&
+    !filteredEmails.some((email) => email.id === selectedEmailId)
+  ) {
+    setSelectedEmailId('');
+    setMobileView('list');
+  }
+}, [filteredEmails, selectedEmailId]);
   const selectedEmail = emails.find((e) => e.id === selectedEmailId);
 
   // Folder definitions with live counts
@@ -345,18 +345,53 @@ export const InboxPage = ({
   };
 
   // Dispatch Email
-  const handleSendEmail = (e) => {
-    e.preventDefault();
-    if (!composerTo.trim()) return;
+const handleSendEmail = async (e) => {
+  e.preventDefault();
+
+  if (!composerTo.trim()) return;
+
+  try {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      addToast({
+        title: 'Authentication Required',
+        message: 'Please log in again before sending an email.',
+        type: 'error'
+      });
+      return;
+    }
+
+    const token = await currentUser.getIdToken();
+
+    const response = await fetch('http://localhost:5000/api/emails/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        to: composerTo.trim(),
+        subject: composerSubject.trim() || '(No Subject)',
+        body: composerBody.trim() || '(No content provided)'
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to send email');
+    }
 
     const newEmail = {
-      id: `em-${Date.now()}`,
-      senderName: 'Alex Rivera',
-      senderEmail: 'alex.rivera@relay.dev',
+      id: data.email.id,
+      senderName: currentUser.displayName || 'You',
+      senderEmail: currentUser.email || '',
       recipient: composerTo.trim(),
       subject: composerSubject.trim() || '(No Subject)',
       preview:
-        composerBody.trim().slice(0, 110) || 'Sent message with no text preview.',
+        composerBody.trim().slice(0, 110) ||
+        'Sent message with no text preview.',
       body: composerBody.trim() || '(No content provided)',
       timestamp: 'Just now',
       unread: false,
@@ -366,11 +401,14 @@ export const InboxPage = ({
     };
 
     onUpdateEmails([newEmail, ...emails]);
+
     clearStoredDraft();
+
     setComposeSuccess(true);
+
     addToast({
       title: 'Email Sent',
-      message: `Dispatched to ${composerTo.trim()}`,
+      message: `Email successfully sent to ${composerTo.trim()}`,
       type: 'success'
     });
 
@@ -383,7 +421,16 @@ export const InboxPage = ({
       setLastDraftSavedAt(null);
       setDraftSaveStatus('idle');
     }, 1000);
-  };
+  } catch (error) {
+    console.error('Send email error:', error);
+
+    addToast({
+      title: 'Email Failed',
+      message: error.message || 'Unable to send email.',
+      type: 'error'
+    });
+  }
+};
 
   // Keyboard navigation
   useEffect(() => {
@@ -497,7 +544,126 @@ export const InboxPage = ({
     mobileView,
     selectedFolder
   ]);
+useEffect(() => {
+  const loadSentEmails = async () => {
+    try {
+      const currentUser = auth.currentUser;
 
+      if (!currentUser) return;
+
+      const token = await currentUser.getIdToken();
+
+      const response = await fetch(
+        'http://localhost:5000/api/emails/sent',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load sent emails');
+      }
+
+      const formattedEmails = data.emails.map((email) => ({
+        id: email.id,
+        senderName: email.senderName || currentUser.displayName || 'You',
+        senderEmail: email.senderEmail || currentUser.email || '',
+        recipient: email.to,
+        subject: email.subject,
+        preview: email.body?.slice(0, 110) || '',
+        body: email.body || '',
+        timestamp: email.createdAt
+          ? new Date(email.createdAt._seconds * 1000).toLocaleString()
+          : 'Unknown',
+        unread: false,
+        starred: false,
+        folder: 'sent',
+        tags: ['Sent'],
+      }));
+
+      onUpdateEmails(formattedEmails);
+    } catch (error) {
+      console.error('Load sent emails error:', error);
+    }
+  };
+
+  loadSentEmails();
+}, []);
+useEffect(() => {
+  const loadGmailInbox = async () => {
+    try {
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) return;
+
+      const token = await currentUser.getIdToken();
+
+      const response = await fetch(
+        'http://localhost:5000/api/gmail/messages',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to load Gmail messages');
+      }
+
+      const formattedEmails = data.messages.map((email) => {
+        const senderMatch = email.from.match(/^(.*?)\s*<(.+)>$/);
+
+        const senderName = senderMatch
+          ? senderMatch[1].replace(/"/g, '').trim()
+          : email.from.split('@')[0];
+
+        const senderEmail = senderMatch
+          ? senderMatch[2].trim()
+          : email.from.trim();
+
+        return {
+          id: `gmail-${email.id}`,
+          gmailId: email.id,
+          threadId: email.threadId,
+          senderName,
+          senderEmail,
+          recipient: email.to,
+          subject: email.subject,
+          preview: email.snippet,
+          body: email.snippet,
+          timestamp: email.date
+            ? new Date(email.date).toLocaleString()
+            : 'Unknown',
+          unread: false,
+          starred: false,
+          folder: 'inbox',
+          tags: ['Inbox'],
+        };
+      });
+
+      onUpdateEmails((currentEmails) => {
+        const nonGmailEmails = currentEmails.filter(
+          (email) => !email.gmailId
+        );
+
+        return [...formattedEmails, ...nonGmailEmails];
+      });
+    } catch (error) {
+      console.error('Load Gmail inbox error:', error);
+    }
+  };
+
+  loadGmailInbox();
+}, []);
   return (
     <div
       className="flex flex-col lg:flex-row h-full overflow-hidden bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-colors"
@@ -606,14 +772,23 @@ export const InboxPage = ({
                   <button
                     key={tag}
                     type="button"
-                    onClick={() =>
-                      setSelectedTag((prev) => (prev === tag ? null : tag))
-                    }
-                    className={`flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      isSelected
-                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    }`}
+                    onClick={() => {
+  if (selectedTag === tag) {
+    setSelectedTag(null);
+    return;
+  }
+
+  setSelectedTag(tag);
+
+  const taggedEmail = emails.find((email) =>
+    email.tags?.includes(tag)
+  );
+
+  if (taggedEmail) {
+    setSelectedFolder(taggedEmail.folder);
+    setMobileView('list');
+  }
+}}
                   >
                     <div className="flex items-center gap-2">
                       <Tag
@@ -659,7 +834,7 @@ export const InboxPage = ({
         {/* Thread List Header */}
         <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider capitalize">
+            <span className="text-xs font-bold text-slate-800 dark:text-white tracking-wider capitalize">
               {selectedFolder}
             </span>
             <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
@@ -714,9 +889,23 @@ export const InboxPage = ({
               <button
                 key={tag}
                 type="button"
-                onClick={() =>
-                  setSelectedTag((prev) => (prev === tag ? null : tag))
-                }
+                onClick={() => {
+  if (selectedTag === tag) {
+    setSelectedTag(null);
+    return;
+  }
+
+  setSelectedTag(tag);
+
+  const taggedEmail = emails.find((email) =>
+    email.tags?.includes(tag)
+  );
+
+  if (taggedEmail) {
+    setSelectedFolder(taggedEmail.folder);
+    setMobileView('list');
+  }
+}}
                 className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors ${
                   selectedTag === tag
                     ? 'bg-indigo-600 text-white shadow-2xs'
@@ -854,9 +1043,19 @@ export const InboxPage = ({
                           key={t}
                           type="button"
                           onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTag(t);
-                          }}
+  e.stopPropagation();
+
+  setSelectedTag(t);
+
+  const taggedEmail = emails.find((email) =>
+    email.tags?.includes(t)
+  );
+
+  if (taggedEmail) {
+    setSelectedFolder(taggedEmail.folder);
+    setMobileView('list');
+  }
+}}
                           className={`px-1.5 py-0.2 rounded text-[10px] font-medium transition-colors ${
                             selectedTag === t
                               ? 'bg-indigo-600 text-white'

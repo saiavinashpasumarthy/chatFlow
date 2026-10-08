@@ -1,7 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const healthRoutes = require("./routes/health.routes")
+const authRoutes = require("./routes/authRoutes")
 const app = express();
+const emailRoutes = require("./routes/emailRoutes");
+const gmailRoutes = require("./routes/gmailRoutes");
 
 app.use(
   cors({
@@ -18,5 +21,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 app.use("/api/health", healthRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/emails",emailRoutes);
+app.use("/api/gmail",gmailRoutes);
 
 module.exports = app;

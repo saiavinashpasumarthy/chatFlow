@@ -23,46 +23,59 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setErrorMessage('');
 
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
+  const trimmedName = name.trim();
+  const trimmedEmail = email.trim();
 
-    if (!trimmedName) {
-      setErrorMessage('Please enter your full name.');
-      return;
-    }
+  if (!trimmedName) {
+    setErrorMessage('Please enter your name.');
+    return;
+  }
 
-    if (!trimmedEmail) {
-      setErrorMessage('Please enter your email address.');
-      return;
-    }
+  if (!trimmedEmail) {
+    setErrorMessage('Please enter your email address.');
+    return;
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setErrorMessage('Please enter a valid email format (e.g. name@relay.dev).');
-      return;
-    }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!password || password.length < 4) {
-      setErrorMessage('Password must be at least 4 characters long.');
-      return;
-    }
+  if (!emailRegex.test(trimmedEmail)) {
+    setErrorMessage('Please provide a valid email address.');
+    return;
+  }
 
+  if (!password || password.length < 6) {
+    setErrorMessage('Password must be at least 6 characters long.');
+    return;
+  }
+
+  try {
     setIsSubmitting(true);
-    setTimeout(() => {
-      onSignup({
-        name: trimmedName,
-        email: trimmedEmail,
-        department,
-        role: `${department} Teammate`
-      });
-      setIsSubmitting(false);
-    }, 300);
-  };
 
+    await onSignup({
+      name: trimmedName,
+      email: trimmedEmail,
+      password,
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+
+    if (error.code === 'auth/email-already-in-use') {
+      setErrorMessage('An account already exists with this email.');
+    } else if (error.code === 'auth/invalid-email') {
+      setErrorMessage('Please provide a valid email address.');
+    } else if (error.code === 'auth/weak-password') {
+      setErrorMessage('Password must be at least 6 characters long.');
+    } else {
+      setErrorMessage('Unable to create account. Please try again.');
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">
       {/* Return to Landing link & Theme Switcher */}

@@ -20,37 +20,52 @@ export const LoginPage = ({ onNavigate, onLogin, onQuickDemoLogin }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setErrorMessage('');
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setErrorMessage('Please enter your email address.');
-      return;
-    }
+  const trimmedEmail = email.trim();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setErrorMessage('Please provide a valid email format (e.g., alex@relay.dev).');
-      return;
-    }
+  if (!trimmedEmail) {
+    setErrorMessage('Please enter your email address.');
+    return;
+  }
 
-    if (!password || password.length < 4) {
-      setErrorMessage('Password must be at least 4 characters long.');
-      return;
-    }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  if (!emailRegex.test(trimmedEmail)) {
+    setErrorMessage('Please provide a valid email address.');
+    return;
+  }
+
+  if (!password || password.length < 6) {
+    setErrorMessage('Password must be at least 6 characters long.');
+    return;
+  }
+
+  try {
     setIsSubmitting(true);
-    // Simulate instantaneous client-side authentication transition
-    setTimeout(() => {
-      onLogin({
-        email: trimmedEmail,
-        name: trimmedEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-      });
-      setIsSubmitting(false);
-    }, 300);
-  };
+
+    await onLogin({
+      email: trimmedEmail,
+      password,
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+
+    if (error.code === 'auth/invalid-credential') {
+      setErrorMessage('Invalid email or password.');
+    } else if (error.code === 'auth/user-not-found') {
+      setErrorMessage('No account found with this email.');
+    } else if (error.code === 'auth/wrong-password') {
+      setErrorMessage('Incorrect password.');
+    } else {
+      setErrorMessage('Unable to log in. Please try again.');
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">

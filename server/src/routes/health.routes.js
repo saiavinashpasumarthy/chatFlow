@@ -1,5 +1,6 @@
 const express = require("express");
 const { db } = require("../config/firebase");
+const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -22,6 +23,14 @@ router.get("/firebase", async (req, res) => {
       message: "Firestore connection failed",
     });
   }
+});
+
+router.get("/protected", requireAuth, (req, res) => {
+  res.json({
+    success: true,
+    message: "Authentication successful",
+    user: req.user,
+  });
 });
 
 module.exports = router;
