@@ -175,8 +175,8 @@ export const TopBar = ({
           className={`p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
             isSyncing ? 'cursor-not-allowed opacity-75' : ''
           }`}
-          title="Simulate workspace sync"
-          aria-label="Simulate workspace sync"
+          title="Sync workspace"
+          aria-label="Sync workspace"
         >
           <RefreshCw
             className={`w-4 h-4 text-slate-500 dark:text-slate-400 ${isSyncing ? 'animate-spin text-indigo-600 dark:text-indigo-400' : ''}`}

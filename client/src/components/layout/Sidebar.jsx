@@ -142,42 +142,26 @@ export const Sidebar = ({
             );
           })}
         </nav>
+        {/* Footer info */}
+<div className="p-3 border-t border-slate-100 dark:border-slate-800">
+  <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 px-1">
+    {!isCollapsed && (
+      <span className="flex items-center gap-1.5 text-[11px]">
+        <ShieldCheck className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+        Relay v0.1.0
+      </span>
+    )}
 
-        {/* Footer info & Mock Mode Indicator */}
-        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          {!isCollapsed ? (
-            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>Mock Mode Active</span>
-              </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 leading-normal">
-                Local mock models active. Awaiting backend API endpoints.
-              </p>
-            </div>
-          ) : (
-            <div className="flex justify-center" title="Mock Mode Active">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 px-1 pt-1">
-            {!isCollapsed && (
-              <span className="flex items-center gap-1.5 text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                Relay v0.1.0
-              </span>
-            )}
-            <button
-              type="button"
-              className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              title="Preferences"
-              aria-label="Settings"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+    <button
+      type="button"
+      className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      title="Preferences"
+      aria-label="Settings"
+    >
+      <SlidersHorizontal className="w-4 h-4" />
+    </button>
+  </div>
+</div>
       </aside>
     </>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import {
   Radio,
   Mail,
@@ -10,8 +11,8 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  Sparkles
 } from 'lucide-react';
+
 import { ThemeToggle } from '../components/common/ThemeToggle';
 
 export const SignUpPage = ({ onNavigate, onSignup }) => {
@@ -23,61 +24,66 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setErrorMessage('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
 
-  const trimmedName = name.trim();
-  const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
 
-  if (!trimmedName) {
-    setErrorMessage('Please enter your name.');
-    return;
-  }
-
-  if (!trimmedEmail) {
-    setErrorMessage('Please enter your email address.');
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(trimmedEmail)) {
-    setErrorMessage('Please provide a valid email address.');
-    return;
-  }
-
-  if (!password || password.length < 6) {
-    setErrorMessage('Password must be at least 6 characters long.');
-    return;
-  }
-
-  try {
-    setIsSubmitting(true);
-
-    await onSignup({
-      name: trimmedName,
-      email: trimmedEmail,
-      password,
-    });
-  } catch (error) {
-    console.error('Signup error:', error);
-
-    if (error.code === 'auth/email-already-in-use') {
-      setErrorMessage('An account already exists with this email.');
-    } else if (error.code === 'auth/invalid-email') {
-      setErrorMessage('Please provide a valid email address.');
-    } else if (error.code === 'auth/weak-password') {
-      setErrorMessage('Password must be at least 6 characters long.');
-    } else {
-      setErrorMessage('Unable to create account. Please try again.');
+    if (!trimmedName) {
+      setErrorMessage('Please enter your name.');
+      return;
     }
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+
+    if (!trimmedEmail) {
+      setErrorMessage('Please enter your email address.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please provide a valid email address.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await onSignup({
+        name: trimmedName,
+        email: trimmedEmail,
+        password,
+        department,
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+
+      if (error.code === 'auth/email-already-in-use') {
+        setErrorMessage('An account already exists with this email.');
+      } else if (error.code === 'auth/invalid-email') {
+        setErrorMessage('Please provide a valid email address.');
+      } else if (error.code === 'auth/weak-password') {
+        setErrorMessage('Password must be at least 6 characters long.');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setErrorMessage('Email and password sign-up is not enabled.');
+      } else {
+        setErrorMessage('Unable to create account. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">
+
       {/* Return to Landing link & Theme Switcher */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 mb-4 flex items-center justify-between">
         <button
@@ -97,9 +103,11 @@ const handleSubmit = async (e) => {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-md mb-3">
           <Radio className="w-6 h-6 animate-pulse" />
         </div>
+
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
           Create your Relay account
         </h1>
+
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Get started with your unified email and chat workspace.
         </p>
@@ -108,13 +116,6 @@ const handleSubmit = async (e) => {
       {/* Main Form Card */}
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
-          {/* Demo Disclaimer Notice */}
-          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-800 text-[11px] text-indigo-900 dark:text-indigo-200 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <strong>Client-Side Demo:</strong> Signing up creates a local session in your browser. No server database is created or required.
-            </div>
-          </div>
 
           {/* Validation Error Message */}
           {errorMessage && (
@@ -129,6 +130,8 @@ const handleSubmit = async (e) => {
 
           {/* Sign Up Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+
+            {/* Full Name */}
             <div>
               <label
                 htmlFor="signup-name"
@@ -136,10 +139,12 @@ const handleSubmit = async (e) => {
               >
                 Full Name
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <User className="w-4 h-4" />
                 </div>
+
                 <input
                   id="signup-name"
                   type="text"
@@ -147,12 +152,13 @@ const handleSubmit = async (e) => {
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Alex Rivera"
+                  placeholder="Your full name"
                   className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
                 />
               </div>
             </div>
 
+            {/* Work Email */}
             <div>
               <label
                 htmlFor="signup-email"
@@ -160,10 +166,12 @@ const handleSubmit = async (e) => {
               >
                 Work Email
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <Mail className="w-4 h-4" />
                 </div>
+
                 <input
                   id="signup-email"
                   type="email"
@@ -171,12 +179,13 @@ const handleSubmit = async (e) => {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex@relay.dev"
+                  placeholder="name@company.com"
                   className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
                 />
               </div>
             </div>
 
+            {/* Department */}
             <div>
               <label
                 htmlFor="signup-dept"
@@ -184,10 +193,12 @@ const handleSubmit = async (e) => {
               >
                 Department
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <Building className="w-4 h-4" />
                 </div>
+
                 <select
                   id="signup-dept"
                   value={department}
@@ -204,6 +215,7 @@ const handleSubmit = async (e) => {
               </div>
             </div>
 
+            {/* Password */}
             <div>
               <label
                 htmlFor="signup-password"
@@ -211,10 +223,12 @@ const handleSubmit = async (e) => {
               >
                 Password
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                   <Lock className="w-4 h-4" />
                 </div>
+
                 <input
                   id="signup-password"
                   type={showPassword ? 'text' : 'password'}
@@ -225,20 +239,27 @@ const handleSubmit = async (e) => {
                   placeholder="••••••••"
                   className="w-full pl-9 pr-10 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
+
               <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
-                Minimum 4 characters (demo validation).
+                Password must contain at least 6 characters.
               </p>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -246,7 +267,10 @@ const handleSubmit = async (e) => {
                 isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
               }`}
             >
-              <span>{isSubmitting ? 'Creating Profile...' : 'Create Demo Account'}</span>
+              <span>
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
+              </span>
+
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -254,6 +278,7 @@ const handleSubmit = async (e) => {
           {/* Log In Link */}
           <div className="text-center pt-2 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
             Already have an account?{' '}
+
             <button
               type="button"
               onClick={() => onNavigate('login')}
@@ -262,6 +287,7 @@ const handleSubmit = async (e) => {
               Log in
             </button>
           </div>
+
         </div>
       </div>
     </div>

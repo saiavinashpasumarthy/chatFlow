@@ -3,11 +3,7 @@ const { serverTimestamp } = require("../utils/firestore");
 
 const usersCollection = db.collection("users");
 
-const createUserProfile = async ({
-  uid,
-  name,
-  email,
-}) => {
+const createUserProfile = async ({ uid, name, email, department = "" }) => {
   const userRef = usersCollection.doc(uid);
 
   const existingUser = await userRef.get();
@@ -24,7 +20,7 @@ const createUserProfile = async ({
     email,
     avatarUrl: "",
     role: "user",
-    department: "",
+    department,
     location: "",
     bio: "",
     status: "offline",
@@ -44,9 +40,7 @@ const createUserProfile = async ({
 const getUserById = async (uid) => {
   const snapshot = await usersCollection.doc(uid).get();
 
-  if (!snapshot.exists) {
-    return null;
-  }
+  if (!snapshot.exists) return null;
 
   return {
     id: snapshot.id,

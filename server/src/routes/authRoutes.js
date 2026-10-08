@@ -10,11 +10,13 @@ const router = express.Router();
 router.post("/profile", requireAuth, async (req, res) => {
   try {
     const { uid, email, name } = req.user;
+    const {department= ""}= req.body;
 
     const user = await createUserProfile({
       uid,
       email,
       name: name || email?.split("@")[0] || "User",
+      department,
     });
 
     res.status(200).json({

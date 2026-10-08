@@ -1,7 +1,33 @@
 const { google } = require("googleapis");
-const { oauth2Client } = require("../config/gmail");
+const { db } = require("../config/firebase");
+const { createGmailOAuthClient } = require("../config/gmail");
 
-const getGmailMessages = async () => {
+const getGmailMessages = async (uid) => {
+  if (!uid) {
+    throw new Error("User ID is required");
+  }
+
+  const userSnapshot = await db
+    .collection("users")
+    .doc(uid)
+    .get();
+
+  if (!userSnapshot.exists) {
+    throw new Error("User profile not found");
+  }
+
+  const userData = userSnapshot.data();
+
+  if (!userData.gmailRefreshToken) {
+    throw new Error(
+      "Gmail account is not connected. Please connect Gmail first."
+    );
+  }
+
+  const oauth2Client = createGmailOAuthClient(
+    userData.gmailRefreshToken
+  );
+
   const gmail = google.gmail({
     version: "v1",
     auth: oauth2Client,
@@ -21,7 +47,12 @@ const getGmailMessages = async () => {
         userId: "me",
         id: message.id,
         format: "metadata",
-        metadataHeaders: ["From", "To", "Subject", "Date"],
+        metadataHeaders: [
+          "From",
+          "To",
+          "Subject",
+          "Date",
+        ],
       });
 
       const headers = result.data.payload?.headers || [];
@@ -47,4 +78,6 @@ const getGmailMessages = async () => {
   return detailedMessages;
 };
 
-module.exports = { getGmailMessages };
+module.exports = {
+  getGmailMessages,
+};
