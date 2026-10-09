@@ -92,7 +92,7 @@ export function AppContent() {
   // Real contacts loaded from Firestore through the backend
   const [contacts, setContacts] = useState([]);
 
-  const [files, setFiles] = useState(mockFiles);
+  const [files, setFiles] = useState([]);
 
   // Load real registered users for Contacts
   useEffect(() => {
