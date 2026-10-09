@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ThemeToggle } from '../components/common/ThemeToggle';
-
+import {auth} from "../config/firebase";
 export const LandingPage = ({ onNavigate }) => {
   const [activePreviewTab, setActivePreviewTab] = useState('inbox');
 
@@ -75,6 +75,7 @@ export const LandingPage = ({ onNavigate }) => {
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             <ThemeToggle />
+
 
             <button
               type="button"

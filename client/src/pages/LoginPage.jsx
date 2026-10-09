@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 
 import { ThemeToggle } from '../components/common/ThemeToggle';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
   const [email, setEmail] = useState('');
@@ -19,6 +21,8 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+const [resetMessage, setResetMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,7 +75,52 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
       setIsSubmitting(false);
     }
   };
+const handleForgotPassword = async () => {
+  setErrorMessage('');
+  setResetMessage('');
 
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    setErrorMessage('Please enter your email address first.');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(trimmedEmail)) {
+    setErrorMessage('Please provide a valid email address.');
+    return;
+  }
+
+  try {
+    setIsResettingPassword(true);
+
+    await sendPasswordResetEmail(auth, trimmedEmail);
+
+    setResetMessage(
+      'Password reset link sent! Please check your email.'
+    );
+  } catch (error) {
+    console.error('Password reset error:', error);
+
+    if (error.code === 'auth/user-not-found') {
+      setErrorMessage('No account found with this email.');
+    } else if (error.code === 'auth/invalid-email') {
+      setErrorMessage('Please provide a valid email address.');
+    } else if (error.code === 'auth/too-many-requests') {
+      setErrorMessage(
+        'Too many requests. Please try again later.'
+      );
+    } else {
+      setErrorMessage(
+        'Unable to send password reset email. Please try again.'
+      );
+    }
+  } finally {
+    setIsResettingPassword(false);
+  }
+};
   const handleGoogleLogin = async () => {
     setErrorMessage('');
 
@@ -217,6 +266,22 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
                   )}
                 </button>
               </div>
+              <div className="flex justify-end mt-2">
+  <button
+    type="button"
+    onClick={handleForgotPassword}
+    disabled={
+      isSubmitting ||
+      isGoogleSubmitting ||
+      isResettingPassword
+    }
+    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:underline disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    {isResettingPassword
+      ? 'Sending reset link...'
+      : 'Forgot password?'}
+  </button>
+</div>
             </div>
 
             {/* Email/Password Login */}

@@ -305,7 +305,7 @@ export const TopBar = ({
               {/* App links */}
               <div className="p-2 text-xs">
                 <div className="px-2 py-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-                  Relay System • Ready (Mock Mode)
+                  Relay System
                 </div>
               </div>
 

@@ -1,47 +1,65 @@
-import { useState, useEffect, useCallback } from 'react';
-import { AppShell } from './components/layout/AppShell';
-import { InboxPage } from './pages/InboxPage';
-import { ChatPage } from './pages/ChatPage';
-import { ContactsPage } from './pages/ContactsPage';
-import { FilesPage } from './pages/FilesPage';
-import { LandingPage } from './pages/LandingPage';
-import { LoginPage } from './pages/LoginPage';
-import { SignUpPage } from './pages/SignUpPage';
-import { ToastProvider, useToast } from './context/ToastContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
+import { useState, useEffect, useCallback } from "react";
+
+import { AppShell } from "./components/layout/AppShell";
+import { InboxPage } from "./pages/InboxPage";
+import { ChatPage } from "./pages/ChatPage";
+import { ContactsPage } from "./pages/ContactsPage";
+import { FilesPage } from "./pages/FilesPage";
+import { LandingPage } from "./pages/LandingPage";
+import { LoginPage } from "./pages/LoginPage";
+import { SignUpPage } from "./pages/SignUpPage";
+
+import { ToastProvider, useToast } from "./context/ToastContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+
 import {
   mockConversations as initialConversations,
   mockChatMessages,
-  mockContacts,
   mockFiles,
-  mockNotifications as initialNotifs
-} from './data/mockData';
+  mockNotifications as initialNotifs,
+} from "./data/mockData";
 
+import { getUsers } from "./services/api";
 
 const parseHashRoute = () => {
-  const hash = window.location.hash || '';
+  const hash = window.location.hash || "";
 
-  if (!hash || hash === '#' || hash === '#/' || hash === '#/landing') {
-    return { view: 'landing', tab: 'inbox' };
+  if (!hash || hash === "#" || hash === "#/" || hash === "#/landing") {
+    return {
+      view: "landing",
+      tab: "inbox",
+    };
   }
 
-  if (hash === '#/login') {
-    return { view: 'login', tab: 'inbox' };
+  if (hash === "#/login") {
+    return {
+      view: "login",
+      tab: "inbox",
+    };
   }
 
-  if (hash === '#/signup') {
-    return { view: 'signup', tab: 'inbox' };
+  if (hash === "#/signup") {
+    return {
+      view: "signup",
+      tab: "inbox",
+    };
   }
 
-  if (hash.startsWith('#/app')) {
-    const parts = hash.split('/');
-    const tab = parts[2] || 'inbox';
+  if (hash.startsWith("#/app")) {
+    const parts = hash.split("/");
+    const tab = parts[2] || "inbox";
 
-    return { view: 'app', tab };
+    return {
+      view: "app",
+      tab,
+    };
   }
 
-  return { view: 'landing', tab: 'inbox' };
+  return {
+    view: "landing",
+    tab: "inbox",
+  };
 };
 
 export function AppContent() {
@@ -52,25 +70,57 @@ export function AppContent() {
     loginWithGoogle,
     signup,
     logout,
-    updateStatus
+    updateStatus,
   } = useAuth();
 
   const { addToast } = useToast();
 
   const [routeState, setRouteState] = useState(parseHashRoute);
-  const [activeTab, setActiveTab] = useState(routeState.tab || 'inbox');
+  const [activeTab, setActiveTab] = useState(routeState.tab || "inbox");
 
   // Shared workspace state
   const [notifications, setNotifications] = useState(initialNotifs);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [emails, setEmails] = useState([]);
   const [prefilledRecipient, setPrefilledRecipient] = useState(null);
   const [targetEmailId, setTargetEmailId] = useState(null);
+
   const [conversations, setConversations] = useState(initialConversations);
-  const [targetContactChat, setTargetContactChat] = useState(null);
   const [targetConversationId, setTargetConversationId] = useState(null);
-  const [contacts, setContacts] = useState(mockContacts);
+
+  // Real contacts loaded from Firestore through the backend
+  const [contacts, setContacts] = useState([]);
+
   const [files, setFiles] = useState(mockFiles);
+
+  // Load real registered users for Contacts
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setContacts([]);
+      return;
+    }
+
+    const loadContacts = async () => {
+      try {
+        const data = await getUsers();
+
+        setContacts(data.users || []);
+      } catch (error) {
+        console.error("Failed to load contacts:", error);
+
+        addToast({
+          title: "Contacts Error",
+          message: error.message || "Failed to load contacts.",
+          type: "error",
+        });
+
+        setContacts([]);
+      }
+    };
+
+    loadContacts();
+  }, [isAuthenticated, user, addToast]);
 
   // Sync route on hashchange
   useEffect(() => {
@@ -79,49 +129,48 @@ export function AppContent() {
 
       setRouteState(nextRoute);
 
-      if (nextRoute.view === 'app' && nextRoute.tab) {
+      if (nextRoute.view === "app" && nextRoute.tab) {
         setActiveTab(nextRoute.tab);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
 
   // Protected route enforcement
   useEffect(() => {
-    if (routeState.view === 'app' && !isAuthenticated) {
-      window.location.hash = '#/login';
+    if (routeState.view === "app" && !isAuthenticated) {
+      window.location.hash = "#/login";
 
       addToast({
-        title: 'Authentication Required',
-        message: 'Please log in to access the Relay workspace.',
-        type: 'warning'
+        title: "Authentication Required",
+        message: "Please log in to access the Relay workspace.",
+        type: "warning",
       });
     }
   }, [routeState.view, isAuthenticated, addToast]);
 
-  // Persist email changes locally
   const unreadEmailCount = emails.filter(
-    (email) => email.folder === 'inbox' && email.unread
+    (email) => email.folder === "inbox" && email.unread
   ).length;
 
   const unreadChatCount = conversations.reduce(
-    (acc, conversation) => acc + conversation.unreadCount,
+    (acc, conversation) => acc + (conversation.unreadCount || 0),
     0
   );
 
-  const navigateTo = useCallback((view, tab = 'inbox') => {
-    if (view === 'landing') {
-      window.location.hash = '#/';
-    } else if (view === 'login') {
-      window.location.hash = '#/login';
-    } else if (view === 'signup') {
-      window.location.hash = '#/signup';
-    } else if (view === 'app') {
+  const navigateTo = useCallback((view, tab = "inbox") => {
+    if (view === "landing") {
+      window.location.hash = "#/";
+    } else if (view === "login") {
+      window.location.hash = "#/login";
+    } else if (view === "signup") {
+      window.location.hash = "#/signup";
+    } else if (view === "app") {
       window.location.hash = `#/app/${tab}`;
     }
   }, []);
@@ -136,42 +185,47 @@ export function AppContent() {
     const loggedUser = await login(credentials);
 
     addToast({
-      title: 'Welcome Back',
+      title: "Welcome Back",
       message: `Signed in as ${loggedUser.name || loggedUser.email}.`,
-      type: 'success'
+      type: "success",
     });
 
-    navigateTo('app', 'inbox');
+    navigateTo("app", "inbox");
   };
 
   // Real account signup
-  const handleSignup=async(profileData)=>{
-    const newUser =await signup(profileData);
+  const handleSignup = async (profileData) => {
+    const newUser = await signup(profileData);
+
     addToast({
-      title:'Account Created',
-      message:`Welcome to Relay, ${newUser.name || newUser.email}!`,
-      type:'success'
+      title: "Account Created",
+      message: `Welcome to Relay, ${newUser.name || newUser.email}!`,
+      type: "success",
     });
-    navigateTo('app','inbox');
+
+    navigateTo("app", "inbox");
   };
 
   const handleLogout = async () => {
     await logout();
 
+    setContacts([]);
+    setConversations([]);
+
     addToast({
-      title: 'Logged Out',
-      message: 'You have been signed out of Relay.',
-      type: 'info'
+      title: "Logged Out",
+      message: "You have been signed out of Relay.",
+      type: "info",
     });
 
-    navigateTo('landing');
+    navigateTo("landing");
   };
 
   const handleMarkNotificationsRead = () => {
     setNotifications((prev) =>
       prev.map((notification) => ({
         ...notification,
-        read: true
+        read: true,
       }))
     );
   };
@@ -182,7 +236,7 @@ export function AppContent() {
         notification.id === id
           ? {
               ...notification,
-              read: !notification.read
+              read: !notification.read,
             }
           : notification
       )
@@ -202,7 +256,7 @@ export function AppContent() {
   const handleNavigateFromNotification = ({
     targetTab,
     targetEmailId,
-    targetConvId
+    targetConvId,
   }) => {
     if (targetTab) {
       handleSelectTab(targetTab);
@@ -217,46 +271,58 @@ export function AppContent() {
     }
   };
 
-  const handleStartChatFromContact = (contactName) => {
-    setTargetContactChat(contactName);
-    handleSelectTab('chat');
+  // ContactsPage creates/opens the real conversation.
+  // App only receives the conversation ID and opens Chat.
+  const handleStartChatFromContact = (contact, conversationId) => {
+    if (!conversationId) {
+      addToast({
+        title: "Chat Error",
+        message: "Conversation could not be opened.",
+        type: "error",
+      });
+
+      return;
+    }
+
+    setTargetConversationId(conversationId);
+    handleSelectTab("chat");
   };
 
   const handleSendEmailFromContact = (contactEmail) => {
     setPrefilledRecipient(contactEmail);
-    handleSelectTab('inbox');
+    handleSelectTab("inbox");
   };
 
   // 1. Landing Page
-  if (routeState.view === 'landing') {
-    return (
-      <LandingPage
-        onNavigate={navigateTo}
-      />
-    );
+  if (routeState.view === "landing") {
+    return <LandingPage onNavigate={navigateTo} />;
   }
 
   // 2. Login Page
-  if (routeState.view === 'login') {
+  if (routeState.view === "login") {
     return (
       <LoginPage
         onNavigate={navigateTo}
         onLogin={handleLogin}
-        onGoogleLogin={async()=>{
-          const loggedUser=await loginWithGoogle();
+        onGoogleLogin={async () => {
+          const loggedUser = await loginWithGoogle();
+
           addToast({
-            title:'Welcome Back',
-            message:`Signed in as ${loggedUser.name || loggedUser.email}.`,
-            type:'success'
+            title: "Welcome Back",
+            message: `Signed in as ${
+              loggedUser.name || loggedUser.email
+            }.`,
+            type: "success",
           });
-          navigateTo('app','inbox');
+
+          navigateTo("app", "inbox");
         }}
       />
     );
   }
 
   // 3. Sign Up Page
-  if (routeState.view === 'signup') {
+  if (routeState.view === "signup") {
     return (
       <SignUpPage
         onNavigate={navigateTo}
@@ -288,42 +354,43 @@ export function AppContent() {
       unreadEmailCount={unreadEmailCount}
       unreadChatCount={unreadChatCount}
     >
-      {activeTab === 'inbox' && (
+      {activeTab === "inbox" && (
         <InboxPage
           emails={emails}
           onUpdateEmails={setEmails}
           searchQuery={searchQuery}
           prefilledRecipient={prefilledRecipient}
-          onClearPrefilledRecipient={() => setPrefilledRecipient(null)}
+          onClearPrefilledRecipient={() =>
+            setPrefilledRecipient(null)
+          }
           targetEmailId={targetEmailId}
           onClearTargetEmailId={() => setTargetEmailId(null)}
         />
       )}
 
-      {activeTab === 'chat' && (
+      {activeTab === "chat" && (
         <ChatPage
           conversations={conversations}
           onUpdateConversations={setConversations}
           initialMessages={mockChatMessages}
           searchQuery={searchQuery}
-          targetContactChat={targetContactChat}
-          onClearTargetContactChat={() => setTargetContactChat(null)}
           targetConversationId={targetConversationId}
-          onClearTargetConversationId={() => setTargetConversationId(null)}
+          onClearTargetConversationId={() =>
+            setTargetConversationId(null)
+          }
         />
       )}
 
-      {activeTab === 'contacts' && (
+      {activeTab === "contacts" && (
         <ContactsPage
           contacts={contacts}
-          onUpdateContacts={setContacts}
           searchQuery={searchQuery}
           onStartChat={handleStartChatFromContact}
           onSendEmail={handleSendEmailFromContact}
         />
       )}
 
-      {activeTab === 'files' && (
+      {activeTab === "files" && (
         <FilesPage
           files={files}
           onUpdateFiles={setFiles}

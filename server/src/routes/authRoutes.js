@@ -1,4 +1,5 @@
 const express = require("express");
+const { db } = require("../config/firebase");
 const { requireAuth } = require("../middleware/authMiddleware");
 const {
   createUserProfile,
@@ -10,7 +11,7 @@ const router = express.Router();
 router.post("/profile", requireAuth, async (req, res) => {
   try {
     const { uid, email, name } = req.user;
-    const {department= ""}= req.body;
+    const { department = "" } = req.body;
 
     const user = await createUserProfile({
       uid,
@@ -54,6 +55,37 @@ router.get("/me", requireAuth, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch user profile",
+    });
+  }
+});
+
+/*
+ * Get all registered users except the currently logged-in user.
+ * These users are used by the Contacts page.
+ */
+router.get("/users", requireAuth, async (req, res) => {
+  try {
+    const currentUserId = req.user.uid;
+
+    const snapshot = await db.collection("users").get();
+
+    const users = snapshot.docs
+      .filter((doc) => doc.id !== currentUserId)
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+    res.json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Get users error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
     });
   }
 });

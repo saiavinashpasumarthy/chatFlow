@@ -142,7 +142,7 @@ export const FilesPage = ({
     setIsDragging(false);
   };
 
-  const processSimulatedFile = (file) => {
+  const processFile = (file) => {
     setIsDragging(false);
     if (!file) return;
 
@@ -188,7 +188,7 @@ export const FilesPage = ({
           title: '#frontend-core',
           snippet: 'Uploaded locally to Relay'
         },
-        previewSnippet: `Locally staged file (${file.name}). Simulated upload placeholder.`
+        previewSnippet: `Locally staged file (${file.name}). upload placeholder.`
       };
 
       if (onUpdateFiles) {
@@ -197,7 +197,7 @@ export const FilesPage = ({
 
       addToast({
         title: 'File Uploaded',
-        message: `Added "${file.name}" to files list (Simulation only)`,
+        message: `Added "${file.name}" to files list`,
         type: 'success'
       });
     }, 1400);
@@ -206,13 +206,13 @@ export const FilesPage = ({
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processSimulatedFile(e.dataTransfer.files[0]);
+      processFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleManualUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
-      processSimulatedFile(e.target.files[0]);
+      processFile(e.target.files[0]);
     }
   };
 
@@ -253,12 +253,12 @@ export const FilesPage = ({
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
             <span className="flex items-center gap-1.5">
               <HardDrive className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              Relay Simulated Storage
+              RelayStorage
             </span>
-            <span className="text-slate-400 dark:text-slate-400 font-normal">24.5 / 50 GB</span>
+            <span className="text-slate-400 dark:text-slate-400 font-normal">0.0 / 50 GB</span>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-            <div className="bg-indigo-600 h-2 rounded-full w-[49%]" />
+            <div className="bg-indigo-600 h-2 rounded-full w-[0%]" />
           </div>
           <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-1.5">
             Local session allocation • 51% available
@@ -294,7 +294,7 @@ export const FilesPage = ({
               <UploadCloud className="w-5 h-5" />
             </div>
             <p className="text-xs font-semibold text-slate-900 dark:text-white truncate max-w-xs">
-              Simulating upload: {uploadProgress.name}
+              File uploading: {uploadProgress.name}
             </p>
             <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
               <div
@@ -303,7 +303,7 @@ export const FilesPage = ({
               />
             </div>
             <span className="text-[10px] text-slate-400 mt-1.5">
-              {uploadProgress.percent}% completed (UI-only simulation)
+              {uploadProgress.percent}% completed
             </span>
           </div>
         ) : (
@@ -321,9 +321,6 @@ export const FilesPage = ({
             <p className="text-xs text-slate-400 mt-0.5">
               Supports documents, design binaries, code files, and images up to 50MB
             </p>
-            <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
-              Client-side simulation only — files are not stored on remote servers
-            </span>
           </div>
         )}
       </div>
@@ -709,7 +706,7 @@ export const FilesPage = ({
                   onClick={() =>
                     addToast({
                       title: 'Link Copied',
-                      message: `Simulated shareable link copied for "${selectedFile.name}"!`,
+                      message: `Shareable link copied for "${selectedFile.name}"!`,
                       type: 'info'
                     })
                   }
@@ -736,7 +733,7 @@ export const FilesPage = ({
               {/* Content Preview Box */}
               <div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Sample Content Preview
+                  Content Preview
                 </h3>
                 <div className="p-3.5 rounded-xl bg-slate-900 dark:bg-slate-950 text-slate-100 dark:text-slate-200 font-mono text-[11px] leading-relaxed overflow-x-auto shadow-2xs border border-transparent dark:border-slate-800">
                   {selectedFile.previewSnippet ||
