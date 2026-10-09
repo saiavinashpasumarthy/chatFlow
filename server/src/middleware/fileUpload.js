@@ -1,25 +1,19 @@
-
 const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
 
-const uploadDirectory = path.join(__dirname, "../../uploads");
+const storage = multer.memoryStorage();
 
-fs.mkdirSync(uploadDirectory, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, callback) => {
-    callback(null, uploadDirectory);
-  },
-  filename: (_req, _file, callback) => {
-    callback(null, crypto.randomUUID());
-  },
-});
-
-module.exports = multer({
+const upload = multer({
   storage,
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 25 * 1024 * 1024, // 25 MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.originalname) {
+      return cb(new Error("A valid filename is required."));
+    }
+
+    cb(null, true);
   },
 });
+
+module.exports = upload;

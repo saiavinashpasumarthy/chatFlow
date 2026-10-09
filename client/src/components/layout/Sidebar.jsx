@@ -41,7 +41,7 @@ export const Sidebar = ({
       id: 'meet',
       label: 'Meet',
       icon: Video,
-      badge: 1,
+      badge: 0,
       badgeColor: 'bg-emerald-600 text-white'
     },
     {

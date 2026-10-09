@@ -1,510 +1,899 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Video,
   Plus,
-  Calendar,
+  Search,
+  CalendarDays,
   Clock,
   Users,
-  Link2,
   Copy,
   Check,
+  Link2,
   ArrowRight,
-  Sparkles,
-  Search,
-  ExternalLink,
-  ShieldCheck,
+  Radio,
+  LoaderCircle,
+  RefreshCw,
   AlertCircle,
-  Play
+  LogIn,
+  X,
+  History,
 } from 'lucide-react';
-import { mockMeetings } from '../data/mockData';
-import { useToast } from '../context/ToastContext';
-import { CreateMeetingModal } from '../components/meet/CreateMeetingModal';
-import { MeetingDetailsModal } from '../components/meet/MeetingDetailsModal';
-import { MeetingRoom } from '../components/meet/MeetingRoom';
 
-export const MeetPage = ({
+import { auth } from '../config/firebase';
+import { useToast } from '../context/ToastContext';
+import {CreateMeetingModal} from '../components/meet/CreateMeetingModal';
+import {MeetingDetailsModal} from '../components/meet/MeetingDetailsModal';
+import {MeetingRoom} from '../components/meet/MeetingRoom';
+
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).replace(/\/$/, '');
+
+const getMeetingCode = (meeting) =>
+  meeting?.code || meeting?.meetingCode || meeting?.id || '';
+
+const getDateValue = (value) => {
+  if (!value) return null;
+
+  if (typeof value === 'object' && value._seconds) {
+    return new Date(value._seconds * 1000);
+  }
+
+  if (typeof value === 'object' && value.seconds) {
+    return new Date(value.seconds * 1000);
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const normalizeMeeting = (item) => {
+  const code = getMeetingCode(item);
+  const scheduledAt = getDateValue(item.scheduledAt);
+
+  const participants = Array.isArray(item.participants)
+    ? item.participants
+    : [];
+
+  const participantIds = Array.isArray(item.participantIds)
+    ? item.participantIds
+    : participants.map((participant) => participant.uid).filter(Boolean);
+
+  return {
+    ...item,
+    id: item.id || code,
+    code,
+    meetingCode: code,
+    title: item.title || 'Untitled meeting',
+    description: item.description || item.agenda || '',
+    agenda: item.agenda || item.description || '',
+    hostName: item.hostName || item.hostEmail || 'Meeting host',
+    hostEmail: item.hostEmail || '',
+    hostId: item.hostId || '',
+    status: item.status || 'scheduled',
+    scheduledAt: scheduledAt?.toISOString() || null,
+    scheduledTime: scheduledAt
+      ? scheduledAt.toLocaleString()
+      : item.status === 'active'
+        ? 'In progress'
+        : 'Not scheduled',
+    isLive: item.status === 'active',
+    participantsCount: participantIds.length,
+    participantIds,
+    participants,
+    attendees: participants.map((person) => ({
+      id: person.uid,
+      name: person.name || person.email || 'Participant',
+      email: person.email || '',
+      role: person.uid === item.hostId ? 'Host' : 'Participant',
+      isHost: person.uid === item.hostId,
+    })),
+    meetingLink:
+      item.meetingLink ||
+      (code
+        ? `${window.location.origin}/meet/${encodeURIComponent(code)}`
+        : ''),
+  };
+};
+
+export default function MeetPage({
   currentUser,
-  searchQuery = ''
-}) => {
+  searchQuery = '',
+}) {
   const { addToast } = useToast();
 
-  const [meetings, setMeetings] = useState(mockMeetings);
+  const [meetings, setMeetings] = useState([]);
   const [activeMeeting, setActiveMeeting] = useState(null);
-  const [selectedDetailsMeeting, setSelectedDetailsMeeting] = useState(null);
+  const [selectedDetailsMeeting, setSelectedDetailsMeeting] =
+    useState(null);
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [activeTabFilter, setActiveTabFilter] = useState('upcoming'); // 'upcoming' | 'recent'
+  const [activeTabFilter, setActiveTabFilter] = useState('upcoming');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [copiedId, setCopiedId] = useState(null);
 
-  // If in an active video call, render the full meeting room canvas
+  const [isLoadingMeetings, setIsLoadingMeetings] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [meetingsError, setMeetingsError] = useState('');
+
+  const getAuthHeaders = useCallback(async () => {
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error('Please sign in before accessing meetings.');
+    }
+
+    const token = await user.getIdToken();
+
+    return {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+  }, []);
+
+  const apiRequest = useCallback(
+    async (path, options = {}) => {
+      const headers = await getAuthHeaders();
+
+      const response = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers: {
+          ...headers,
+          ...options.headers,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            `Request failed with status ${response.status}.`
+        );
+      }
+
+      return data;
+    },
+    [getAuthHeaders]
+  );
+
+  const loadMeetings = useCallback(async () => {
+    if (!auth.currentUser) {
+      setMeetings([]);
+      setIsLoadingMeetings(false);
+      return;
+    }
+
+    setIsLoadingMeetings(true);
+    setMeetingsError('');
+
+    try {
+      const data = await apiRequest('/api/meetings');
+
+      const items = Array.isArray(data)
+        ? data
+        : data.meetings || data.data || [];
+
+      setMeetings(items.map(normalizeMeeting));
+    } catch (error) {
+      setMeetingsError(
+        error.message || 'Could not load your meetings.'
+      );
+    } finally {
+      setIsLoadingMeetings(false);
+    }
+  }, [apiRequest]);
+
+  useEffect(() => {
+    loadMeetings();
+  }, [loadMeetings]);
+
+  const showToast = useCallback(
+    (title, message, type = 'success') => {
+      addToast({ title, message, type });
+    },
+    [addToast]
+  );
+
+  const handleStartInstantMeeting = async () => {
+    if (isStarting) return;
+
+    setIsStarting(true);
+
+    try {
+      const data = await apiRequest('/api/meetings', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'Instant Team Huddle',
+          agenda: 'Instant team meeting',
+          scheduledAt: null,
+        }),
+      });
+
+      const rawMeeting = data.meeting || data.data || data;
+      const meeting = normalizeMeeting(rawMeeting);
+
+      if (!meeting.meetingCode) {
+        throw new Error(
+          'The server created a response without a meeting code.'
+        );
+      }
+
+      await loadMeetings();
+      setActiveMeeting(meeting);
+
+      showToast(
+        'Meeting created',
+        `Your meeting code is ${meeting.meetingCode}.`
+      );
+    } catch (error) {
+      showToast(
+        'Could not start meeting',
+        error.message || 'Please try again.',
+        'error'
+      );
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
+  const handleJoinByCode = async (event) => {
+    event?.preventDefault();
+
+    const code = joinCodeInput.trim().toUpperCase();
+
+    if (!code) {
+      showToast(
+        'Meeting code required',
+        'Enter the meeting code you received.',
+        'error'
+      );
+      return;
+    }
+
+    if (isJoining) return;
+
+    setIsJoining(true);
+
+    try {
+      // Register this user as a meeting participant first.
+      await apiRequest(
+        `/api/meetings/${encodeURIComponent(code)}/join`,
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      );
+
+      // Fetch the actual meeting after joining.
+      const data = await apiRequest(
+        `/api/meetings/${encodeURIComponent(code)}`
+      );
+
+      const rawMeeting = data.meeting || data.data || data;
+      const meeting = normalizeMeeting({
+        ...rawMeeting,
+        code: rawMeeting.code || code,
+      });
+
+      setJoinCodeInput('');
+      await loadMeetings();
+      setSelectedDetailsMeeting(null);
+      setActiveMeeting(meeting);
+
+      showToast(
+        'Joining meeting',
+        `Connecting to ${meeting.title}.`
+      );
+    } catch (error) {
+      showToast(
+        'Unable to join meeting',
+        error.message ||
+          'Check the meeting code and try again.',
+        'error'
+      );
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleCreateMeeting = async (
+    newMeeting,
+    joinImmediately = false
+  ) => {
+    const meeting = normalizeMeeting(
+      newMeeting?.meeting || newMeeting?.data || newMeeting
+    );
+
+    setIsCreateModalOpen(false);
+    await loadMeetings();
+
+    if (joinImmediately) {
+      setActiveMeeting(meeting);
+      showToast('Meeting ready', 'Opening your meeting room.');
+    } else {
+      showToast(
+        'Meeting scheduled',
+        'Your meeting has been saved.'
+      );
+    }
+  };
+
+  const handleLeaveMeeting = async () => {
+    const meeting = activeMeeting;
+
+    if (!meeting) {
+      setActiveMeeting(null);
+      return;
+    }
+
+    try {
+      await apiRequest(
+        `/api/meetings/${encodeURIComponent(
+          meeting.meetingCode
+        )}/leave`,
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      );
+    } catch (error) {
+      console.error('Could not update meeting leave status:', error);
+    } finally {
+      setActiveMeeting(null);
+      await loadMeetings();
+      showToast('Meeting left', 'You have left the meeting.');
+    }
+  };
+
+  const handleCopyLink = async (meeting) => {
+    const link =
+      meeting.meetingLink ||
+      `${window.location.origin}/meet/${encodeURIComponent(
+        meeting.meetingCode
+      )}`;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedId(meeting.id);
+
+      showToast('Link copied', 'Meeting link copied to clipboard.');
+
+      window.setTimeout(() => {
+        setCopiedId((previous) =>
+          previous === meeting.id ? null : previous
+        );
+      }, 1800);
+    } catch {
+      showToast(
+        'Could not copy link',
+        'Your browser blocked clipboard access.',
+        'error'
+      );
+    }
+  };
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  const filteredMeetings = meetings.filter((meeting) => {
+    const matchesSearch =
+      !normalizedSearch ||
+      [
+        meeting.title,
+        meeting.meetingCode,
+        meeting.description,
+        meeting.hostName,
+      ]
+        .filter(Boolean)
+        .some((value) =>
+          String(value).toLowerCase().includes(normalizedSearch)
+        );
+
+    if (!matchesSearch) return false;
+
+    if (activeTabFilter === 'upcoming') {
+      return meeting.status === 'scheduled' || meeting.status === 'active';
+    }
+
+    if (activeTabFilter === 'live') {
+      return meeting.status === 'active';
+    }
+
+    if (activeTabFilter === 'past') {
+      return meeting.status === 'ended' || meeting.status === 'completed';
+    }
+
+    return true;
+  });
+
+  const upcomingCount = meetings.filter(
+    (meeting) =>
+      meeting.status === 'scheduled' || meeting.status === 'active'
+  ).length;
+
+  const liveCount = meetings.filter(
+    (meeting) => meeting.status === 'active'
+  ).length;
+
+  const pastCount = meetings.filter(
+    (meeting) =>
+      meeting.status === 'ended' || meeting.status === 'completed'
+  ).length;
+
   if (activeMeeting) {
     return (
       <MeetingRoom
         meeting={activeMeeting}
-        onLeave={() => {
-          setActiveMeeting(null);
-          addToast({
-            title: 'Call Ended',
-            message: 'You have left the video meeting.',
-            type: 'info'
-          });
-        }}
-        currentUser={currentUser}
+        currentUser={currentUser || auth.currentUser}
+        onLeave={handleLeaveMeeting}
       />
     );
   }
 
-  // Handle instant meeting start from quick card
-  const handleStartInstantMeeting = () => {
-    const code = `rel-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
-    const instantMeeting = {
-      id: `meet-${Date.now()}`,
-      title: 'Instant Team Huddle',
-      description: 'Ad-hoc video call initiated by team member.',
-      hostName: currentUser?.name || 'Alex Rivera',
-      hostEmail: currentUser?.email || 'alex.rivera@relay.dev',
-      scheduledTime: 'Now (In Progress)',
-      status: 'upcoming',
-      isLive: true,
-      meetingCode: code,
-      meetingLink: `https://relay.meet/${code}`,
-      participantsCount: 1,
-      attendees: [
-        {
-          id: currentUser?.id || 'usr-1',
-          name: currentUser?.name || 'Alex Rivera',
-          role: 'Host',
-          isHost: true,
-          micMuted: false,
-          videoOn: true
-        }
-      ],
-      tags: ['Ad-hoc', 'Instant']
-    };
-
-    setMeetings((prev) => [instantMeeting, ...prev]);
-    setActiveMeeting(instantMeeting);
-    addToast({
-      title: 'Meeting Started',
-      message: 'Instant video room launched.',
-      type: 'success'
-    });
-  };
-
-  // Handle Join with code or link input
-  const handleJoinByCode = (e) => {
-    e.preventDefault();
-    const raw = joinCodeInput.trim();
-    if (!raw) {
-      addToast({
-        title: 'Meeting Code Required',
-        message: 'Please enter a valid meeting code or link (e.g. arc-web-syn).',
-        type: 'warning'
-      });
-      return;
-    }
-
-    // Extract code from link if pasted
-    const cleanCode = raw.includes('/') ? raw.split('/').pop() : raw;
-
-    // Check if an existing meeting matches
-    const existing = meetings.find(
-      (m) => m.meetingCode.toLowerCase() === cleanCode.toLowerCase()
-    );
-
-    if (existing) {
-      setActiveMeeting(existing);
-      addToast({
-        title: 'Joined Meeting',
-        message: `Connected to ${existing.title}`,
-        type: 'success'
-      });
-    } else {
-      // Create ad-hoc room with given code
-      const adHoc = {
-        id: `meet-${Date.now()}`,
-        title: `Team Room (${cleanCode})`,
-        description: 'Joined via meeting code.',
-        hostName: currentUser?.name || 'Alex Rivera',
-        hostEmail: currentUser?.email || 'alex.rivera@relay.dev',
-        scheduledTime: 'Now (In Progress)',
-        status: 'upcoming',
-        isLive: true,
-        meetingCode: cleanCode,
-        meetingLink: `https://relay.meet/${cleanCode}`,
-        participantsCount: 2,
-        attendees: [
-          { id: currentUser?.id || 'usr-1', name: currentUser?.name || 'Alex Rivera', role: 'Participant', isHost: false },
-          { id: 'usr-2', name: 'Sarah Jenkins', role: 'Host', isHost: true }
-        ],
-        tags: ['Code-Join']
-      };
-      setMeetings((prev) => [adHoc, ...prev]);
-      setActiveMeeting(adHoc);
-      addToast({
-        title: 'Joined Meeting Room',
-        message: `Connected to room: ${cleanCode}`,
-        type: 'success'
-      });
-    }
-
-    setJoinCodeInput('');
-  };
-
-  const handleCreateMeeting = (newMeeting, joinImmediately) => {
-    setMeetings((prev) => [newMeeting, ...prev]);
-    if (joinImmediately) {
-      setActiveMeeting(newMeeting);
-      addToast({
-        title: 'Room Started',
-        message: `You are now in ${newMeeting.title}`,
-        type: 'success'
-      });
-    } else {
-      addToast({
-        title: 'Meeting Scheduled',
-        message: `Scheduled ${newMeeting.title} for ${newMeeting.scheduledTime}.`,
-        type: 'success'
-      });
-    }
-  };
-
-  const handleCopyLink = (meeting, e) => {
-    e.stopPropagation();
-    navigator.clipboard?.writeText(meeting.meetingLink || `https://relay.meet/${meeting.meetingCode}`);
-    setCopiedId(meeting.id);
-    addToast({
-      title: 'Link Copied',
-      message: `Meeting link copied to clipboard: ${meeting.meetingCode}`,
-      type: 'success'
-    });
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  // Filter meetings based on active tab and search query
-  const upcomingMeetings = meetings.filter((m) => m.status !== 'completed');
-  const recentMeetings = meetings.filter((m) => m.status === 'completed');
-
-  const currentList = activeTabFilter === 'upcoming' ? upcomingMeetings : recentMeetings;
-  const filteredMeetings = currentList.filter((m) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      m.title.toLowerCase().includes(q) ||
-      m.meetingCode.toLowerCase().includes(q) ||
-      m.hostName.toLowerCase().includes(q) ||
-      m.description?.toLowerCase().includes(q)
-    );
-  });
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0B1220] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Page heading */}
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-400">
+              <Video size={17} />
+              <span>Real-time meetings</span>
+            </div>
 
-      {/* ─────────────────────────────────────────────────────────────
-          PAGE HEADER: Title, Subtitle & Primary Actions
-      ─────────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Relay Meet
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Meet
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
-              HD Video & Audio
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Instant team video huddles, collaborative screen-sharing, and scheduled sessions.
-          </p>
-        </div>
 
-        {/* Primary CTA */}
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Meeting</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          QUICK ACTIONS CARDS
-          1. Start Instant Meeting | 2. Schedule for Later | 3. Join with Code
-      ─────────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* 1. Start Instant Meeting */}
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent border border-indigo-200 dark:border-indigo-900/50 bg-white dark:bg-slate-900 flex flex-col justify-between shadow-xs hover:border-indigo-400 dark:hover:border-indigo-700 transition-all">
-          <div>
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm mb-3">
-              <Video className="w-5 h-5" />
-            </div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Start Instant Meeting
-            </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Launch a simulated video room right now and invite colleagues via link.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleStartInstantMeeting}
-            className="mt-4 flex items-center justify-between w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors"
-          >
-            <span>Start Meeting Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* 2. Schedule Meeting for Later */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div>
-            <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-2xs mb-3 border border-slate-200 dark:border-slate-700">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Schedule for Later
-            </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Plan upcoming sprint reviews or 1:1 sessions with agenda notes.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="mt-4 flex items-center justify-between w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors"
-          >
-            <span>Set Schedule</span>
-            <Calendar className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* 3. Join with Code / Link */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col justify-between shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-          <div>
-            <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs mb-3 border border-slate-200 dark:border-slate-700">
-              <Link2 className="w-5 h-5" />
-            </div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Join with Code or Link
-            </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Enter a meeting code (e.g. <span className="font-mono text-indigo-600 dark:text-indigo-400">arc-web-syn</span>) to jump into the call.
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+              Create a room, join your team, and collaborate face to face.
             </p>
           </div>
 
-          <form onSubmit={handleJoinByCode} className="mt-4 flex items-center gap-2">
-            <input
-              type="text"
-              value={joinCodeInput}
-              onChange={(e) => setJoinCodeInput(e.target.value)}
-              placeholder="Enter meeting code..."
-              className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="submit"
-              className="px-3.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white text-xs font-semibold rounded-xl transition-colors shrink-0"
-            >
-              Join
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          MEETINGS SECTION: Upcoming vs Recent Tabs & Cards List
-      ─────────────────────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-
-        {/* Tab Headers */}
-        <div className="flex items-center justify-between p-4 px-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => setActiveTabFilter('upcoming')}
-              className={`text-xs sm:text-sm font-bold pb-1 transition-all relative ${
-                activeTabFilter === 'upcoming'
-                  ? 'text-indigo-600 dark:text-indigo-400'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+              onClick={handleStartInstantMeeting}
+              disabled={isStarting}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-slate-600 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Upcoming Meetings ({upcomingMeetings.length})
-              {activeTabFilter === 'upcoming' && (
-                <span className="absolute bottom-[-16px] left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+              {isStarting ? (
+                <LoaderCircle size={18} className="animate-spin" />
+              ) : (
+                <Video size={18} />
               )}
+              {isStarting ? 'Creating room…' : 'Start instant meeting'}
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTabFilter('recent')}
-              className={`text-xs sm:text-sm font-bold pb-1 transition-all relative ${
-                activeTabFilter === 'recent'
-                  ? 'text-indigo-600 dark:text-indigo-400'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 transition hover:bg-blue-400"
             >
-              Recent History ({recentMeetings.length})
-              {activeTabFilter === 'recent' && (
-                <span className="absolute bottom-[-16px] left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
-              )}
+              <Plus size={19} />
+              Schedule meeting
             </button>
           </div>
-
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-            {filteredMeetings.length} sessions
-          </span>
         </div>
 
-        {/* Meetings List */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
-          {filteredMeetings.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center mb-3">
-                <Video className="w-6 h-6" />
+        {/* Join by code */}
+        <section className="relative overflow-hidden rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 via-[#111C30] to-[#111827] p-5 sm:p-7">
+          <div className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
+
+          <div className="relative grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+            <div>
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300">
+                <LogIn size={22} />
               </div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                No meetings found
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {searchQuery ? `No results matching "${searchQuery}".` : 'No sessions currently in this category.'}
+
+              <h2 className="text-xl font-semibold text-white">
+                Join a meeting
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Have a meeting code? Enter it here to join the room.
               </p>
             </div>
-          ) : (
-            filteredMeetings.map((item) => {
-              const isLive = item.isLive;
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedDetailsMeeting(item)}
-                  className="p-4 sm:p-5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer group"
+
+            <form
+              onSubmit={handleJoinByCode}
+              className="flex flex-col gap-3 sm:flex-row"
+            >
+              <label className="sr-only" htmlFor="meeting-code">
+                Meeting code
+              </label>
+
+              <input
+                id="meeting-code"
+                type="text"
+                autoComplete="off"
+                value={joinCodeInput}
+                onChange={(event) =>
+                  setJoinCodeInput(event.target.value.toUpperCase())
+                }
+                placeholder="Enter meeting code"
+                className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-[#0B1220]/80 px-4 py-3 text-sm tracking-wider text-white outline-none transition placeholder:tracking-normal placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/15"
+              />
+
+              <button
+                type="submit"
+                disabled={isJoining || !joinCodeInput.trim()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isJoining ? (
+                  <LoaderCircle size={17} className="animate-spin" />
+                ) : (
+                  <ArrowRight size={17} />
+                )}
+                {isJoining ? 'Joining…' : 'Join meeting'}
+              </button>
+            </form>
+          </div>
+        </section>
+
+        {/* Meeting statistics */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">Upcoming meetings</span>
+              <CalendarDays size={19} className="text-blue-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-white">
+              {upcomingCount}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">Live now</span>
+              <Radio size={19} className="text-emerald-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-white">{liveCount}</p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-400">Past meetings</span>
+              <History size={19} className="text-violet-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-white">{pastCount}</p>
+          </div>
+        </div>
+
+        {/* Meeting list */}
+        <section>
+          <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                Your meetings
+              </h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Meetings associated with your account.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={loadMeetings}
+              disabled={isLoadingMeetings}
+              className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-800 disabled:opacity-50 sm:self-auto"
+            >
+              <RefreshCw
+                size={15}
+                className={isLoadingMeetings ? 'animate-spin' : ''}
+              />
+              Refresh
+            </button>
+          </div>
+
+          <div className="mb-5 flex flex-wrap gap-2">
+            {[
+              { id: 'upcoming', label: 'Upcoming' },
+              { id: 'live', label: 'Live' },
+              { id: 'past', label: 'Past' },
+              { id: 'all', label: 'All meetings' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTabFilter(tab.id)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  activeTabFilter === tab.id
+                    ? 'bg-blue-500 text-white'
+                    : 'border border-slate-800 bg-[#111827] text-slate-400 hover:border-slate-700 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {isLoadingMeetings ? (
+            <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#111827]">
+              <LoaderCircle
+                size={28}
+                className="animate-spin text-blue-400"
+              />
+              <p className="mt-3 text-sm text-slate-400">
+                Loading your meetings…
+              </p>
+            </div>
+          ) : meetingsError ? (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+              <AlertCircle
+                size={28}
+                className="mx-auto text-red-400"
+              />
+              <h3 className="mt-3 font-semibold text-white">
+                Could not load meetings
+              </h3>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
+                {meetingsError}
+              </p>
+              <button
+                type="button"
+                onClick={loadMeetings}
+                className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              >
+                Try again
+              </button>
+            </div>
+          ) : filteredMeetings.length === 0 ? (
+            <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-[#111827]/60 px-5 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-slate-400">
+                {activeTabFilter === 'past' ? (
+                  <History size={25} />
+                ) : (
+                  <Video size={25} />
+                )}
+              </div>
+
+              <h3 className="mt-4 text-lg font-semibold text-white">
+                {normalizedSearch
+                  ? 'No matching meetings'
+                  : activeTabFilter === 'past'
+                    ? 'No past meetings yet'
+                    : activeTabFilter === 'live'
+                      ? 'No live meetings right now'
+                      : 'No meetings yet'}
+              </h3>
+
+              <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
+                {normalizedSearch
+                  ? 'Try another search term.'
+                  : 'Start an instant meeting or schedule one to see it here.'}
+              </p>
+
+              {!normalizedSearch && (
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400"
                 >
-                  {/* Left: Meeting Info */}
-                  <div className="flex items-start gap-3.5 min-w-0">
-                    <div className={`p-2.5 rounded-2xl shrink-0 mt-0.5 ${
-                      isLive
-                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/30'
-                        : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400'
-                    }`}>
-                      <Video className="w-5 h-5" />
-                    </div>
+                  <Plus size={17} />
+                  Schedule a meeting
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              {filteredMeetings.map((meeting) => {
+                const isLive = meeting.status === 'active';
+                const isPast =
+                  meeting.status === 'ended' ||
+                  meeting.status === 'completed';
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {item.title}
-                        </h3>
+                return (
+                  <article
+                    key={meeting.id || meeting.meetingCode}
+                    className="group rounded-2xl border border-slate-800 bg-[#111827] p-5 transition hover:border-slate-700 hover:bg-[#131D2E] sm:p-6"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div
+                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                            isLive
+                              ? 'bg-emerald-500/10 text-emerald-400'
+                              : 'bg-blue-500/10 text-blue-400'
+                          }`}
+                        >
+                          {isLive ? (
+                            <Radio size={21} />
+                          ) : (
+                            <Video size={21} />
+                          )}
+                        </div>
 
-                        {isLive && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            LIVE NOW
-                          </span>
-                        )}
-
-                        <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                          {item.meetingCode}
-                        </span>
+                        <div className="min-w-0">
+                          <h3 className="break-words text-base font-semibold text-white">
+                            {meeting.title}
+                          </h3>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Code:{' '}
+                            <span className="font-mono tracking-wider text-slate-300">
+                              {meeting.meetingCode}
+                            </span>
+                          </p>
+                        </div>
                       </div>
 
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 max-w-xl">
-                        {item.description}
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                          isLive
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : isPast
+                              ? 'bg-slate-700/60 text-slate-400'
+                              : 'bg-blue-500/10 text-blue-300'
+                        }`}
+                      >
+                        {isLive
+                          ? 'Live'
+                          : isPast
+                            ? 'Ended'
+                            : 'Scheduled'}
+                      </span>
+                    </div>
+
+                    {meeting.description && (
+                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-400">
+                        {meeting.description}
+                      </p>
+                    )}
+
+                    <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
+                      <span className="inline-flex items-center gap-2">
+                        <Clock size={15} className="text-slate-500" />
+                        {meeting.scheduledTime}
+                      </span>
+
+                      <span className="inline-flex items-center gap-2">
+                        <Users size={15} className="text-slate-500" />
+                        {meeting.participantsCount}{' '}
+                        {meeting.participantsCount === 1
+                          ? 'participant'
+                          : 'participants'}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 border-t border-slate-800 pt-4">
+                      <p className="mb-4 text-xs text-slate-500">
+                        Hosted by{' '}
+                        <span className="text-slate-300">
+                          {meeting.hostName}
+                        </span>
                       </p>
 
-                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 dark:text-slate-500 flex-wrap">
-                        <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          {item.scheduledTime}
-                        </span>
-                        <span>•</span>
-                        <span>Host: {item.hostName}</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          {item.participantsCount} participants
-                        </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {!isPast && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!meeting.meetingCode) {
+                                showToast(
+                                  'Missing meeting code',
+                                  'This meeting cannot be opened.',
+                                  'error'
+                                );
+                                return;
+                              }
+
+                              setJoinCodeInput(meeting.meetingCode);
+                              handleJoinByCodeFromCard(meeting.meetingCode);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400"
+                          >
+                            <Video size={16} />
+                            {isLive ? 'Join now' : 'Join meeting'}
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDetailsMeeting(meeting)}
+                          className="rounded-lg border border-slate-700 px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                        >
+                          Details
+                        </button>
+
+                        {!isPast && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopyLink(meeting)}
+                            title="Copy meeting link"
+                            aria-label="Copy meeting link"
+                            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                          >
+                            {copiedId === meeting.id ? (
+                              <Check size={16} className="text-emerald-400" />
+                            ) : (
+                              <Copy size={16} />
+                            )}
+                            <span className="hidden sm:inline">
+                              {copiedId === meeting.id ? 'Copied' : 'Copy link'}
+                            </span>
+                          </button>
+                        )}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Right: Actions */}
-                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={(e) => handleCopyLink(item, e)}
-                      className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      title="Copy meeting link"
-                      aria-label="Copy meeting link"
-                    >
-                      {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDetailsMeeting(item)}
-                      className="px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      Details
-                    </button>
-
-                    {item.status !== 'completed' && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveMeeting(item);
-                          addToast({
-                            title: 'Joined Meeting',
-                            message: `Connected to ${item.title}`,
-                            type: 'success'
-                          });
-                        }}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
-                      >
-                        <Play className="w-3 h-3 fill-current" />
-                        <span>Join</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+                  </article>
+                );
+              })}
+            </div>
           )}
-        </div>
+        </section>
+
+        <CreateMeetingModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateMeeting}
+        />
+
+        {selectedDetailsMeeting && (
+          <MeetingDetailsModal
+            meeting={selectedDetailsMeeting}
+            onClose={() => setSelectedDetailsMeeting(null)}
+            onJoin={(meeting) => {
+              const code = getMeetingCode(meeting);
+
+              setSelectedDetailsMeeting(null);
+
+              if (code) {
+                handleJoinByCodeFromCard(code);
+              } else {
+                showToast(
+                  'Missing meeting code',
+                  'This meeting cannot be joined.',
+                  'error'
+                );
+              }
+            }}
+          />
+        )}
       </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-          CLEAR DEMO ARCHITECTURE NOTICE
-      ─────────────────────────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-start gap-3">
-        <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
-        <div className="leading-relaxed">
-          <strong className="font-semibold text-slate-800 dark:text-slate-200 block mb-0.5">
-            Relay Meet Architecture Notice:
-          </strong>
-          This interface is an interactive frontend demonstration powered by client state and mock conference datasets. Full multi-party live media calling requires backend infrastructure including meeting room persistence, token-authenticated participant authorization, WebRTC signaling (WebSocket/STUN/TURN), and media SFU routing (e.g. LiveKit, Mediasoup, or Twilio).
-        </div>
-      </div>
-
-      {/* Modals */}
-      <CreateMeetingModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateMeeting}
-        currentUser={currentUser}
-      />
-
-      <MeetingDetailsModal
-        isOpen={Boolean(selectedDetailsMeeting)}
-        onClose={() => setSelectedDetailsMeeting(null)}
-        meeting={selectedDetailsMeeting}
-        onJoin={(m) => {
-          setSelectedDetailsMeeting(null);
-          setActiveMeeting(m);
-        }}
-      />
     </div>
   );
-};
+
+  async function handleJoinByCodeFromCard(codeValue) {
+    const code = String(codeValue || '').trim().toUpperCase();
+
+    if (!code || isJoining) return;
+
+    setIsJoining(true);
+
+    try {
+      await apiRequest(
+        `/api/meetings/${encodeURIComponent(code)}/join`,
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      );
+
+      const data = await apiRequest(
+        `/api/meetings/${encodeURIComponent(code)}`
+      );
+
+      const rawMeeting = data.meeting || data.data || data;
+      const meeting = normalizeMeeting({
+        ...rawMeeting,
+        code: rawMeeting.code || code,
+      });
+
+      await loadMeetings();
+      setActiveMeeting(meeting);
+
+      showToast('Joining meeting', `Connecting to ${meeting.title}.`);
+    } catch (error) {
+      showToast(
+        'Unable to join meeting',
+        error.message || 'Please check the meeting code.',
+        'error'
+      );
+    } finally {
+      setIsJoining(false);
+    }
+  }
+}

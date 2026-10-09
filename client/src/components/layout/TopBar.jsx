@@ -13,6 +13,7 @@ import { NotificationCenter } from '../notifications/NotificationCenter';
 import { useToast } from '../../context/ToastContext';
 import { ThemeToggle } from '../common/ThemeToggle';
 
+
 export const TopBar = ({
   user,
   notifications,
@@ -38,6 +39,15 @@ export const TopBar = ({
   const { addToast } = useToast();
   const unreadNotifs = notifications.filter((n) => !n.read).length;
 
+
+  // Automatically set the status to online when a user signs in.
+  useEffect(() => {
+    const userId = user?.uid || user?.id || user?.email;
+
+    if (!userId) return;
+
+    onUpdateUserStatus?.('online');
+  }, [user?.uid, user?.id, user?.email]);
   // Global keyboard shortcut '/' to focus search, and 'Escape' to clear/unfocus
   useEffect(() => {
     const handleKeyDown = (e) => {

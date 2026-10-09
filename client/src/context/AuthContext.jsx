@@ -167,7 +167,23 @@ export const AuthProvider = ({ children }) => {
       return updated;
     });
   };
+useEffect(() => {
+  const checkFirebaseSession = async () => {
+    if (!auth.currentUser) {
+      console.log("No active Firebase user. Current login is demo-only.");
+      return;
+    }
 
+    try {
+      const token = await auth.currentUser.getIdToken(true);
+      console.log("Fresh Firebase token:", token);
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+    }
+  };
+
+  checkFirebaseSession();
+}, []);
   const isAuthenticated = Boolean(user);
 
   return (
@@ -195,4 +211,4 @@ export const useAuth = () => {
   }
 
   return context;
-};
+};

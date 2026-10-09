@@ -1,13 +1,13 @@
 const express = require("express");
-const {getAuth} = require("firebase-admin/auth")
+const { getAuth } = require("firebase-admin/auth");
 const { db } = require("../config/firebase");
 const { requireAuth } = require("../middleware/authMiddleware");
+const { createNotification } = require("../services/notificationService");
 
 const router = express.Router();
 
 /*
   GET /api/chats
-
   Get all conversations for the logged-in user.
 */
 router.get("/", requireAuth, async (req, res) => {
@@ -25,20 +25,24 @@ router.get("/", requireAuth, async (req, res) => {
       ...doc.data(),
     }));
 
-    res.json({
+    return res.json({
       success: true,
       conversations,
     });
   } catch (error) {
     console.error("Get conversations error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch conversations",
     });
   }
 });
 
+/*
+  POST /api/chats
+  Create a new conversation or reuse an existing direct conversation.
+*/
 router.post("/", requireAuth, async (req, res) => {
   try {
     const userId = req.user.uid;
@@ -77,7 +81,6 @@ router.post("/", requireAuth, async (req, res) => {
 
     const memberIds = [...new Set([userId, targetUserId])];
 
-    // Reuse an existing direct conversation when possible.
     if (type === "direct") {
       const snapshot = await db
         .collection("conversations")
@@ -149,9 +152,9 @@ router.post("/", requireAuth, async (req, res) => {
     });
   }
 });
+
 /*
   GET /api/chats/:conversationId/messages
-
   Get all messages from a conversation.
 */
 router.get("/:conversationId/messages", requireAuth, async (req, res) => {
@@ -191,14 +194,14 @@ router.get("/:conversationId/messages", requireAuth, async (req, res) => {
       ...doc.data(),
     }));
 
-    res.json({
+    return res.json({
       success: true,
       messages,
     });
   } catch (error) {
     console.error("Get messages error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch messages",
     });
@@ -208,6 +211,7 @@ router.get("/:conversationId/messages", requireAuth, async (req, res) => {
 /*
   POST /api/chats/:conversationId/messages
   Send a message with optional Cloudinary attachment metadata.
+  Notify other conversation members after saving the message.
 */
 router.post(
   "/:conversationId/messages",
@@ -218,7 +222,10 @@ router.post(
       const { conversationId } = req.params;
       const { content = "", attachment = null } = req.body;
 
-      if (!content.trim() && !attachment) {
+      if (
+        typeof content !== "string" ||
+        (!content.trim() && !attachment)
+      ) {
         return res.status(400).json({
           success: false,
           message: "Message content or attachment is required",
@@ -251,26 +258,66 @@ router.post(
       }
 
       const now = new Date();
+      const trimmedContent = content.trim();
+      const senderName =
+        req.user.name || req.user.email || "Someone";
 
       const messageData = {
         conversationId,
         senderId: userId,
         senderEmail: req.user.email || null,
-        senderName: req.user.name || req.user.email || "User",
-        content: content.trim(),
+        senderName,
+        content: trimmedContent,
         attachment: attachment || null,
         createdAt: now,
       };
 
+      // Save the message first.
       const messageRef = await conversationRef
         .collection("messages")
         .add(messageData);
 
+      const lastMessage = trimmedContent
+        ? trimmedContent
+        : `📎 ${attachment.name || "Attachment"}`;
+
       await conversationRef.update({
-        lastMessage: content.trim()
-          ? content.trim()
-          : `📎 ${attachment.name || "Attachment"}`,
+        lastMessage,
         updatedAt: now,
+      });
+
+      // Notify other members without failing the message request
+      // if notification creation encounters a problem.
+      const io = req.app.get("io");
+
+      const recipientIds = conversation.memberIds.filter(
+        (memberId) => memberId !== userId
+      );
+
+      const notificationDescription = trimmedContent
+        ? trimmedContent
+        : `Sent an attachment: ${attachment.name || "Attachment"}`;
+
+      const notificationResults = await Promise.allSettled(
+        recipientIds.map((recipientId) =>
+          createNotification(io, {
+            userId: recipientId,
+            title: `${senderName} sent you a message`,
+            description: notificationDescription,
+            type: "chat",
+            targetTab: "chats",
+            targetConvId: conversationId,
+          })
+        )
+      );
+
+      notificationResults.forEach((result) => {
+        if (result.status === "rejected") {
+          console.error(
+            "Failed to create chat notification:",
+            result.reason
+          );
+        }
       });
 
       return res.status(201).json({
@@ -290,4 +337,5 @@ router.post(
     }
   }
 );
+
 module.exports = router;

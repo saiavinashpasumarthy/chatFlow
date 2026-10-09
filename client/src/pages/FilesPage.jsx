@@ -406,13 +406,14 @@ export const FilesPage = ({
   };
 
   return (
-    <div
-      className="flex flex-col h-full overflow-y-auto bg-slate-50/50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 text-slate-800 dark:text-slate-100"
-      role="region"
-      aria-label="Shared Files and Media"
-    >
+    
+<div
+className="flex flex-col min-h-full bg-slate-50/50 dark:bg-slate-950 p-3 sm:p-4 lg:p-5 text-slate-800 dark:text-slate-100"
+  role="region"
+  aria-label="Shared Files and Media"
+>
       {/* Header and storage usage */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Shared Files &amp; Media
@@ -457,7 +458,7 @@ export const FilesPage = ({
         onClick={() => {
           if (!uploadProgress) fileInputRef.current?.click();
         }}
-        className={`relative mb-6 border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all bg-white dark:bg-slate-900 ${
+        className={`relative mb-4 border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center transition-all bg-white dark:bg-slate-900 ${
           uploadProgress
             ? 'cursor-wait opacity-80'
             : 'cursor-pointer'
@@ -591,15 +592,14 @@ export const FilesPage = ({
           })}
         </div>
       </div>
-
       {/* Files table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+      <div className="min-h-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden flex flex-col">
         {isLoading ? (
-          <div className="p-10 text-center text-sm text-slate-500">
+          <div className="p-10 text-center text-sm text-slate-500 dark:text-slate-400">
             Loading your files...
           </div>
         ) : sortedFiles.length === 0 ? (
-          <div className="p-8">
+          <div className="p-8 overflow-auto">
             <EmptyState
               icon={FolderOpen}
               title="No matching files found"
@@ -622,48 +622,28 @@ export const FilesPage = ({
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+          <div className="flex-1 min-h-0 overflow-auto overscroll-contain">
+            <table className="w-full min-w-[850px] text-left text-xs sm:text-sm">
+              <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-800/95 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th
-                    className="py-3 px-4 cursor-pointer"
-                    onClick={() => toggleSort('name')}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      File name
-                      {sortField === 'name' ? (
-                        sortOrder === 'asc' ? (
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ArrowDown className="w-3.5 h-3.5" />
-                        )
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3" />
-                      )}
-                    </span>
+                  <th className="px-5 py-4 font-semibold text-slate-500 dark:text-slate-300">
+                    File
                   </th>
-                  <th className="py-3 px-4">Type</th>
-                  <th className="py-3 px-4">Origin</th>
-                  <th
-                    className="py-3 px-4 cursor-pointer"
-                    onClick={() => toggleSort('size')}
-                  >
+                  <th className="px-4 py-4 font-semibold text-slate-500 dark:text-slate-300">
+                    Type
+                  </th>
+                  <th className="px-4 py-4 font-semibold text-slate-500 dark:text-slate-300">
                     Size
                   </th>
-                  <th
-                    className="py-3 px-4 cursor-pointer"
-                    onClick={() => toggleSort('sender')}
-                  >
+                  <th className="px-4 py-4 font-semibold text-slate-500 dark:text-slate-300">
+                    Uploaded
+                  </th>
+                  <th className="px-4 py-4 font-semibold text-slate-500 dark:text-slate-300">
                     Uploader
                   </th>
-                  <th
-                    className="py-3 px-4 cursor-pointer"
-                    onClick={() => toggleSort('date')}
-                  >
-                    Date
+                  <th className="px-5 py-4 text-right font-semibold text-slate-500 dark:text-slate-300">
+                    Actions
                   </th>
-                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
 
@@ -671,88 +651,57 @@ export const FilesPage = ({
                 {sortedFiles.map((file) => (
                   <tr
                     key={file.id}
-                    onClick={() => setSelectedFile(file)}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                    className="group hover:bg-indigo-50/50 dark:hover:bg-slate-800/60 transition-colors"
                   >
-                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800">
+                    <td className="px-5 py-4">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFile(file)}
+                        className="flex items-center gap-3 text-left min-w-0 max-w-[320px]"
+                      >
+                        <span className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800">
                           {getFileIcon(file.type)}
-                        </div>
-                        <span className="truncate max-w-xs">
-                          {file.name}
                         </span>
-                      </div>
+                        <span className="min-w-0">
+                          <span
+                            className="block font-semibold text-slate-800 dark:text-slate-100 truncate"
+                            title={file.name}
+                          >
+                            {file.name}
+                          </span>
+                          <span className="block mt-1 text-[11px] text-slate-400">
+                            Click to view details
+                          </span>
+                        </span>
+                      </button>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize">
-                        {file.type}
+                    <td className="px-4 py-4">
+                      <span className="inline-flex px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize">
+                        {file.type || 'document'}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      {file.relatedContext ? (
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onNavigateTab?.(
-                              file.relatedContext.type === 'email'
-                                ? 'inbox'
-                                : 'chat'
-                            );
-                          }}
-                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs bg-slate-50 dark:bg-slate-800"
-                        >
-                          {file.relatedContext.type === 'email' ? (
-                            <Mail className="w-3.5 h-3.5" />
-                          ) : (
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          )}
-                          <span className="truncate">
-                            {file.relatedContext.title}
-                          </span>
-                        </button>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
+                    <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
+                      {file.size || formatFileSize(file.sizeBytes)}
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
-                      {file.size}
+                    <td className="px-4 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400">
+                      {file.updatedAt || formatDate(file.date)}
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-700 dark:text-slate-200">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[10px] font-bold flex items-center justify-center shrink-0">
-                          {(file.sharedBy || 'You')
-                            .split(' ')
-                            .map((part) => part[0])
-                            .join('')
-                            .slice(0, 2)}
-                        </div>
-                        <span className="truncate">
-                          {file.sharedBy || 'You'}
-                        </span>
-                      </div>
+                    <td className="px-4 py-4 text-slate-600 dark:text-slate-300">
+                      {file.sharedBy || 'You'}
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-400 text-xs">
-                      {file.updatedAt}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setSelectedFile(file);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                          title="Preview details"
-                          aria-label={`Preview ${file.name}`}
+                          onClick={() => setSelectedFile(file)}
+                          title="View details"
+                          aria-label={`View details for ${file.name}`}
+                          className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -760,27 +709,33 @@ export const FilesPage = ({
                         <button
                           type="button"
                           disabled={busyFileId === file.id}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDownloadFile(file);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 disabled:opacity-50"
+                          onClick={() => handleDownloadFile(file)}
                           title="Download"
                           aria-label={`Download ${file.name}`}
+                          className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 disabled:opacity-50"
                         >
                           <Download className="w-4 h-4" />
                         </button>
 
                         <button
                           type="button"
+                          onClick={() => handleShareInfo(file)}
+                          title="Share"
+                          aria-label={`Share ${file.name}`}
+                          className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
                           disabled={busyFileId === file.id}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleDeleteFile(file.id, file.name);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 disabled:opacity-50"
+                          onClick={() =>
+                            handleDeleteFile(file.id, file.name)
+                          }
                           title="Delete"
                           aria-label={`Delete ${file.name}`}
+                          className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-700 disabled:opacity-50"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -793,7 +748,6 @@ export const FilesPage = ({
           </div>
         )}
       </div>
-
       {/* File preview drawer */}
       {selectedFile && (
         <div

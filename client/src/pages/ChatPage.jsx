@@ -34,7 +34,7 @@ import {
 } from '../services/api';
 
 export const ChatPage = ({
-  conversations,
+  conversations = [],
   onUpdateConversations,
   initialMessages,
   searchQuery = '',
@@ -44,7 +44,6 @@ export const ChatPage = ({
   const [activeConvId, setActiveConvId] = useState(
     conversations[0]?.id || null
   );
-
   const [messagesState, setMessagesState] = useState(initialMessages || {});
   const [inputMessage, setInputMessage] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -53,6 +52,7 @@ export const ChatPage = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [attachedFile, setAttachedFile] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const { addToast } = useToast();
   const { user } = useAuth();
@@ -61,9 +61,6 @@ export const ChatPage = ({
   const emojiPickerRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  /*
-   * Resolve the selected conversation.
-   */
   const activeConversation = useMemo(
     () =>
       conversations.find(
@@ -73,25 +70,12 @@ export const ChatPage = ({
     [conversations, activeConvId]
   );
 
-  /*
-   * Resolve the other participant's name.
-   *
-   * Supports common conversation fields and participant arrays.
-   * For direct chats, the conversation name is used as a fallback.
-   */
   const activeChatName = useMemo(() => {
     const conversation = activeConversation;
-
     if (!conversation) return 'Select a conversation';
 
-    const isChannel = conversation.type === 'channel';
-
-    if (isChannel) {
-      return (
-        conversation.name ||
-        conversation.displayName ||
-        'Channel'
-      );
+    if (conversation.type === 'channel') {
+      return conversation.name || conversation.displayName || 'Channel';
     }
 
     const directName =
@@ -107,6 +91,7 @@ export const ChatPage = ({
       conversation.participants ||
       conversation.members ||
       conversation.users ||
+      conversation.memberDetails ||
       [];
 
     if (Array.isArray(participants) && participants.length > 0) {
@@ -120,7 +105,7 @@ export const ChatPage = ({
 
         return (
           participantId &&
-          String(participantId) !== String(user?.id)
+          String(participantId) !== String(user?.uid || user?.id)
         );
       });
 
@@ -142,24 +127,16 @@ export const ChatPage = ({
       conversation.email ||
       'Chat'
     );
-  }, [activeConversation, user?.id]);
+  }, [activeConversation, user?.id, user?.uid]);
 
-  /*
-   * Connect Socket.IO.
-   */
   useEffect(() => {
-    if (!socket.connected) {
-      socket.connect();
-    }
+    if (!socket.connected) socket.connect();
 
     return () => {
       socket.disconnect();
     };
   }, []);
 
-  /*
-   * Join the active conversation.
-   */
   useEffect(() => {
     if (!activeConvId) return;
 
@@ -182,29 +159,24 @@ export const ChatPage = ({
     };
   }, [activeConvId]);
 
-  /*
-   * Load conversations from the backend.
-   */
   useEffect(() => {
     let cancelled = false;
 
     const loadChats = async () => {
       try {
         const data = await getChats();
-
         if (cancelled) return;
 
         const backendConversations = data.conversations || [];
 
-        if (backendConversations.length > 0) {
+        if (onUpdateConversations) {
           onUpdateConversations(backendConversations);
         }
 
         if (targetConversationId) {
           const targetExists = backendConversations.some(
             (conversation) =>
-              String(conversation.id) ===
-              String(targetConversationId)
+              String(conversation.id) === String(targetConversationId)
           );
 
           if (targetExists) {
@@ -218,10 +190,10 @@ export const ChatPage = ({
                 String(conversation.id) === String(currentId)
             );
 
-            return stillExists
-              ? currentId
-              : backendConversations[0].id;
+            return stillExists ? currentId : backendConversations[0].id;
           });
+        } else {
+          setActiveConvId(null);
         }
       } catch (error) {
         console.error('Chats API error:', error);
@@ -235,21 +207,14 @@ export const ChatPage = ({
     };
   }, [onUpdateConversations, targetConversationId]);
 
-  /*
-   * Open a conversation selected from Contacts.
-   */
   useEffect(() => {
     if (!targetConversationId) return;
 
     setActiveConvId(targetConversationId);
     setMobileView('thread');
-
     onClearTargetConversationId?.();
   }, [targetConversationId, onClearTargetConversationId]);
 
-  /*
-   * Load messages for the active conversation.
-   */
   useEffect(() => {
     if (!activeConvId) return;
 
@@ -258,7 +223,6 @@ export const ChatPage = ({
     const loadMessages = async () => {
       try {
         const data = await getMessages(activeConvId);
-
         if (cancelled) return;
 
         setMessagesState((previous) => ({
@@ -277,17 +241,14 @@ export const ChatPage = ({
     };
   }, [activeConvId]);
 
-  /*
-   * Listen for incoming messages.
-   * Refresh from the backend when a message arrives in this conversation.
-   */
   useEffect(() => {
     if (!activeConvId) return;
 
+    let cancelled = false;
+
     const handleIncomingMessage = (incoming) => {
       const incomingConversationId =
-        incoming?.conversationId ||
-        incoming?.chatId;
+        incoming?.conversationId || incoming?.chatId;
 
       if (
         incomingConversationId &&
@@ -295,6 +256,8 @@ export const ChatPage = ({
       ) {
         getMessages(activeConvId)
           .then((data) => {
+            if (cancelled) return;
+
             setMessagesState((previous) => ({
               ...previous,
               [activeConvId]: data.messages || []
@@ -309,30 +272,21 @@ export const ChatPage = ({
     socket.on('new_message', handleIncomingMessage);
 
     return () => {
+      cancelled = true;
       socket.off('new_message', handleIncomingMessage);
     };
   }, [activeConvId]);
 
-  /*
-   * Close emoji picker on Escape.
-   */
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setShowEmojiPicker(false);
-      }
+      if (event.key === 'Escape') setShowEmojiPicker(false);
     };
 
     window.addEventListener('keydown', handleKeyDown);
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  /*
-   * Close emoji picker when clicking outside.
-   */
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -345,14 +299,10 @@ export const ChatPage = ({
 
     document.addEventListener('mousedown', handleClickOutside);
 
-    return () => {
+    return () =>
       document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, []);
 
-  /*
-   * Filter conversations.
-   */
   const filteredConversations = useMemo(() => {
     return conversations.filter((conversation) => {
       if (
@@ -376,25 +326,21 @@ export const ChatPage = ({
         return false;
       }
 
-      const query = (sidebarSearch || searchQuery)
-        .trim()
-        .toLowerCase();
-
+      const query = (sidebarSearch || searchQuery).trim().toLowerCase();
       if (!query) return true;
 
       return [
         conversation.name,
         conversation.lastMessage,
-        conversation.topic
+        conversation.topic,
+        conversation.memberEmail,
+        conversation.email
       ].some((value) =>
         String(value || '').toLowerCase().includes(query)
       );
     });
   }, [conversations, filterType, sidebarSearch, searchQuery]);
 
-  /*
-   * Keep a valid active conversation.
-   */
   useEffect(() => {
     if (filteredConversations.length === 0) return;
 
@@ -403,25 +349,17 @@ export const ChatPage = ({
         String(conversation.id) === String(activeConvId)
     );
 
-    if (!exists) {
-      setActiveConvId(filteredConversations[0].id);
-    }
+    if (!exists) setActiveConvId(filteredConversations[0].id);
   }, [filteredConversations, activeConvId]);
 
   const currentMessages = messagesState[activeConvId] || [];
 
-  /*
-   * Scroll to the latest message.
-   */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: 'smooth'
     });
   }, [activeConvId, currentMessages.length]);
 
-  /*
-   * Select a conversation.
-   */
   const handleSelectConversation = (conversationId) => {
     setActiveConvId(conversationId);
     setMobileView('thread');
@@ -438,8 +376,56 @@ export const ChatPage = ({
   };
 
   /*
-   * Send a message.
+   * Normalize the common Cloudinary response shapes.
+   * Do not send attachment metadata to Firebase unless a URL exists.
    */
+  const normalizeUploadedFile = (uploadResponse, selectedFile) => {
+    const uploadedFile =
+      uploadResponse?.file ||
+      uploadResponse?.data?.file ||
+      uploadResponse?.data ||
+      uploadResponse;
+
+    const url =
+      uploadedFile?.secure_url ||
+      uploadedFile?.url ||
+      uploadedFile?.fileUrl ||
+      uploadedFile?.path;
+
+    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
+      console.error('Unexpected file upload response:', uploadResponse);
+
+      throw new Error(
+        'The upload succeeded without returning a usable file URL. Check the /api/files/upload response.'
+      );
+    }
+
+    return {
+      name:
+        uploadedFile.originalName ||
+        uploadedFile.original_filename ||
+        uploadedFile.name ||
+        selectedFile.name,
+      size: selectedFile.size,
+      type:
+        uploadedFile.format ||
+        uploadedFile.type ||
+        selectedFile.type ||
+        'file',
+      url,
+      publicId:
+        uploadedFile.publicId ||
+        uploadedFile.public_id ||
+        null,
+      resourceType:
+        uploadedFile.resourceType ||
+        uploadedFile.resource_type ||
+        null,
+      format: uploadedFile.format || null,
+      bytes: uploadedFile.bytes || uploadedFile.size || selectedFile.file.size
+    };
+  };
+
   const handleSendMessage = async (event) => {
     event?.preventDefault();
 
@@ -455,8 +441,10 @@ export const ChatPage = ({
     const content = inputMessage.trim();
 
     if (!content && !attachedFile) return;
+    if (isSending) return;
 
     const conversationId = activeConvId;
+    setIsSending(true);
 
     try {
       let attachment = null;
@@ -469,24 +457,24 @@ export const ChatPage = ({
         });
 
         const uploadResponse = await uploadFile(attachedFile.file);
-        const uploadedFile = uploadResponse.file;
 
-        attachment = {
-          name: attachedFile.name,
-          size: attachedFile.size,
-          type: attachedFile.type,
-          url: uploadedFile.url,
-          publicId: uploadedFile.publicId,
-          resourceType: uploadedFile.resourceType,
-          format: uploadedFile.format,
-          bytes: uploadedFile.bytes
-        };
+        // Keep this log temporarily to inspect the backend response.
+        console.log('File upload response:', uploadResponse);
+
+        attachment = normalizeUploadedFile(
+          uploadResponse,
+          attachedFile
+        );
       }
 
       const data = await sendMessage(conversationId, {
         content,
         attachment
       });
+
+      if (!data?.message) {
+        throw new Error('The server did not return the saved message.');
+      }
 
       const newMessage = data.message;
 
@@ -505,8 +493,7 @@ export const ChatPage = ({
               ? {
                   ...conversation,
                   lastMessage:
-                    content ||
-                    `📎 ${attachment?.name || 'Attachment'}`,
+                    content || `📎 ${attachment?.name || 'Attachment'}`,
                   updatedAt: new Date()
                 }
               : conversation
@@ -528,56 +515,20 @@ export const ChatPage = ({
         type: 'success'
       });
     } catch (error) {
-      console.warn('Backend message endpoint unavailable; sending in demo mode:', error.message);
-
-      const demoMsg = {
-        id: `msg-${Date.now()}`,
-        conversationId,
-        senderId: user?.id || 'demo-usr-1',
-        senderName: user?.name || 'Alex Rivera',
-        content,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'delivered',
-        isSelf: true
-      };
-
-      setMessagesState((previous) => ({
-        ...previous,
-        [conversationId]: [
-          ...(previous[conversationId] || []),
-          demoMsg
-        ]
-      }));
-
-      if (onUpdateConversations) {
-        onUpdateConversations((previous) =>
-          previous.map((conversation) =>
-            String(conversation.id) === String(conversationId)
-              ? {
-                  ...conversation,
-                  lastMessage: content || '📎 Attachment',
-                  updatedAt: new Date()
-                }
-              : conversation
-          )
-        );
-      }
-
-      setInputMessage('');
-      setAttachedFile(null);
-      setShowEmojiPicker(false);
+      console.error('Failed to send message:', error);
 
       addToast({
-        title: 'Message Sent',
-        message: `Sent to ${activeChatName} (Demo Mode)`,
-        type: 'success'
+        title: 'Message Not Sent',
+        message:
+          error.message ||
+          'The message could not be sent. Please try again.',
+        type: 'error'
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
-  /*
-   * Enter sends; Shift+Enter is not used by this single-line input.
-   */
   const handleKeyDownComposer = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -585,20 +536,13 @@ export const ChatPage = ({
     }
   };
 
-  /*
-   * Insert an emoji.
-   */
   const handleInsertEmoji = (emoji) => {
     setInputMessage((previous) => previous + emoji);
     setShowEmojiPicker(false);
   };
 
-  /*
-   * File attachment.
-   */
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
@@ -630,9 +574,6 @@ export const ChatPage = ({
     });
   };
 
-  /*
-   * Refresh messages.
-   */
   const handleRefresh = async () => {
     if (!activeConvId) return;
 
@@ -682,6 +623,91 @@ export const ChatPage = ({
     }
   };
 
+  const renderAttachment = (attachment, isSelf) => {
+    if (!attachment) return null;
+
+    const attachmentUrl =
+      attachment.url ||
+      attachment.secure_url ||
+      attachment.fileUrl;
+
+    const extension = String(
+      attachment.format ||
+      attachment.name?.split('.').pop() ||
+      attachment.type ||
+      ''
+    )
+      .toLowerCase()
+      .replace(/^\./, '');
+
+    if (
+      typeof attachmentUrl !== 'string' ||
+      !/^https?:\/\//i.test(attachmentUrl)
+    ) {
+      return (
+        <div className="mt-2.5 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+          Attachment link is unavailable. This message was saved without a valid file URL.
+        </div>
+      );
+    }
+
+    const isCodeFile = [
+      'js', 'jsx', 'ts', 'tsx', 'py',
+      'java', 'cpp', 'c', 'html', 'css'
+    ].includes(extension);
+
+    return (
+      <a
+        href={attachmentUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(event) => event.stopPropagation()}
+        className={`mt-2.5 flex min-w-0 items-center gap-3 rounded-xl border p-3 cursor-pointer transition-colors ${
+          isSelf
+            ? 'border-white/20 bg-blue-700 hover:bg-blue-800'
+            : 'border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-blue-800 dark:bg-slate-900 dark:hover:bg-slate-800'
+        }`}
+        aria-label={`Open ${attachment.name || 'attachment'} in a new tab`}
+        title="Open attachment in a new tab"
+      >
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+            isSelf
+              ? 'bg-white/15 text-white'
+              : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300'
+          }`}
+        >
+          {extension === 'pdf' ? (
+            <FileText className="h-5 w-5" />
+          ) : isCodeFile ? (
+            <FileCode className="h-5 w-5" />
+          ) : (
+            <ImageIcon className="h-5 w-5" />
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold">
+            {attachment.name || 'Attached file'}
+          </p>
+          <p
+            className={`mt-0.5 text-[10px] ${
+              isSelf
+                ? 'text-indigo-100'
+                : 'text-slate-500 dark:text-slate-400'
+            }`}
+          >
+            {attachment.size || 'Attachment'} · Click to open
+          </p>
+        </div>
+
+        <span className="shrink-0 text-xs opacity-75" aria-hidden="true">
+          ↗
+        </span>
+      </a>
+    );
+  };
+
   return (
     <div
       className="flex h-full overflow-hidden bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100"
@@ -702,7 +728,6 @@ export const ChatPage = ({
                 Messages
               </h2>
             </div>
-
             <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
               {filteredConversations.length} total
             </span>
@@ -710,7 +735,6 @@ export const ChatPage = ({
 
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5 pointer-events-none" />
-
             <input
               type="text"
               value={sidebarSearch}
@@ -718,7 +742,6 @@ export const ChatPage = ({
               placeholder="Search conversations..."
               className="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
             />
-
             {sidebarSearch && (
               <button
                 type="button"
@@ -773,14 +796,13 @@ export const ChatPage = ({
             filteredConversations.map((conversation) => {
               const isActive =
                 String(conversation.id) === String(activeConvId);
-
               const isChannel = conversation.type === 'channel';
-
               const conversationName =
                 conversation.name ||
                 conversation.displayName ||
                 conversation.recipientName ||
                 conversation.memberName ||
+                conversation.memberEmail ||
                 conversation.email ||
                 'Chat';
 
@@ -794,10 +816,7 @@ export const ChatPage = ({
                     handleSelectConversation(conversation.id)
                   }
                   onKeyDown={(event) => {
-                    if (
-                      event.key === 'Enter' ||
-                      event.key === ' '
-                    ) {
+                    if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
                       handleSelectConversation(conversation.id);
                     }
@@ -816,17 +835,12 @@ export const ChatPage = ({
                     ) : (
                       <div className="relative">
                         <div className="w-9 h-9 rounded-xl font-bold text-xs flex items-center justify-center bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white">
-                          {conversationName
-                            .slice(0, 2)
-                            .toUpperCase()}
+                          {String(conversationName).slice(0, 2).toUpperCase()}
                         </div>
-
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-slate-900 ${getStatusColor(
                             conversation.status ||
-                              (conversation.isOnline
-                                ? 'online'
-                                : 'offline')
+                              (conversation.isOnline ? 'online' : 'offline')
                           )}`}
                         />
                       </div>
@@ -838,12 +852,10 @@ export const ChatPage = ({
                       <span className="text-xs truncate font-semibold">
                         {conversationName}
                       </span>
-
                       <span className="text-[10px] text-slate-400 shrink-0 ml-1">
                         {conversation.timestamp || ''}
                       </span>
                     </div>
-
                     <p className="text-xs text-slate-400 line-clamp-1">
                       {conversation.lastMessage ||
                         conversation.topic ||
@@ -899,13 +911,10 @@ export const ChatPage = ({
                   ? activeChatName
                   : 'Select a conversation'}
               </h1>
-
               <p className="text-xs text-slate-400 truncate">
                 {activeConversation?.topic ||
                   activeConversation?.role ||
-                  (activeConversation?.isOnline
-                    ? 'Online now'
-                    : 'Offline')}
+                  (activeConversation?.isOnline ? 'Online now' : 'Offline')}
               </p>
             </div>
           </div>
@@ -914,9 +923,7 @@ export const ChatPage = ({
             {activeConversation?.membersCount && (
               <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-1 rounded-xl">
                 <Users className="w-3.5 h-3.5" />
-                <span>
-                  {activeConversation.membersCount} members
-                </span>
+                <span>{activeConversation.membersCount} members</span>
               </div>
             )}
 
@@ -940,9 +947,7 @@ export const ChatPage = ({
               onClick={() =>
                 addToast({
                   title: 'Conversation Info',
-                  message: `${activeChatName} (${
-                    activeConversation?.type || 'unknown'
-                  })`,
+                  message: `${activeChatName} (${activeConversation?.type || 'unknown'})`,
                   type: 'info'
                 })
               }
@@ -987,18 +992,14 @@ export const ChatPage = ({
 
                 const isSelf =
                   message.isSelf === true ||
-                  (
-                    Boolean(user?.id) &&
+                  (Boolean(user?.uid || user?.id) &&
                     message.senderId != null &&
-                    String(message.senderId) === String(user.id)
-                  );
+                    String(message.senderId) ===
+                      String(user?.uid || user?.id));
 
                 return (
                   <React.Fragment
-                    key={
-                      message.id ||
-                      `${message.senderId}-${index}`
-                    }
+                    key={message.id || `${message.senderId}-${index}`}
                   >
                     {isDifferentDate && (
                       <div className="flex items-center justify-center my-4">
@@ -1011,9 +1012,7 @@ export const ChatPage = ({
                     <div
                       className={`flex w-full ${
                         isSelf ? 'justify-end' : 'justify-start'
-                      } ${
-                        isSameSenderAsPrevious ? 'mt-1' : 'mt-4'
-                      }`}
+                      } ${isSameSenderAsPrevious ? 'mt-1' : 'mt-4'}`}
                     >
                       <div
                         className={`flex min-w-0 max-w-[90%] sm:max-w-[72%] gap-2.5 ${
@@ -1058,60 +1057,7 @@ export const ChatPage = ({
                               </p>
                             )}
 
-                            {message.attachment && (
-                              <a
-                                href={message.attachment.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                download={message.attachment.name}
-                                onClick={(event) =>
-                                  event.stopPropagation()
-                                }
-                                className={`mt-2.5 flex min-w-0 items-center gap-3 rounded-xl border p-3 transition-colors ${
-                                  isSelf
-                                    ? 'border-white/20 bg-blue-700 hover:bg-blue-800'
-                                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-blue-800 dark:bg-slate-900 dark:hover:bg-slate-800'
-                                }`}
-                              >
-                                <div
-                                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                                    isSelf
-                                      ? 'bg-white/15 text-white'
-                                      : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300'
-                                  }`}
-                                >
-                                  {message.attachment.type === 'pdf' ? (
-                                    <FileText className="h-5 w-5" />
-                                  ) : [
-                                      'js', 'jsx', 'ts', 'tsx', 'py',
-                                      'java', 'cpp', 'c', 'html', 'css'
-                                    ].includes(message.attachment.type) ? (
-                                    <FileCode className="h-5 w-5" />
-                                  ) : (
-                                    <ImageIcon className="h-5 w-5" />
-                                  )}
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-xs font-semibold">
-                                    {message.attachment.name ||
-                                      'Attached file'}
-                                  </p>
-
-                                  <p
-                                    className={`mt-0.5 text-[10px] ${
-                                      isSelf
-                                        ? 'text-indigo-100'
-                                        : 'text-slate-500 dark:text-slate-400'
-                                    }`}
-                                  >
-                                    {message.attachment.size ||
-                                      'Attachment'}{' '}
-                                    · Click to open
-                                  </p>
-                                </div>
-                              </a>
-                            )}
+                            {renderAttachment(message.attachment, isSelf)}
                           </div>
 
                           <div
@@ -1182,9 +1128,7 @@ export const ChatPage = ({
               className="absolute bottom-18 right-6 z-50 bg-white dark:bg-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-3 w-64"
             >
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700">
-                <span className="text-xs font-bold">
-                  Quick Emojis
-                </span>
+                <span className="text-xs font-bold">Quick Emojis</span>
               </div>
 
               <div className="grid grid-cols-4 gap-2 text-xl text-center">
@@ -1228,15 +1172,13 @@ export const ChatPage = ({
               <input
                 type="text"
                 value={inputMessage}
-                onChange={(event) =>
-                  setInputMessage(event.target.value)
-                }
+                onChange={(event) => setInputMessage(event.target.value)}
                 onKeyDown={handleKeyDownComposer}
                 placeholder={`Message ${
                   activeConversation ? activeChatName : 'chat'
                 }...`}
                 autoComplete="off"
-                disabled={!activeConvId}
+                disabled={!activeConvId || isSending}
                 className="w-full pl-4 pr-10 py-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60"
               />
 
@@ -1257,11 +1199,12 @@ export const ChatPage = ({
               type="submit"
               disabled={
                 !activeConvId ||
+                isSending ||
                 (!inputMessage.trim() && !attachedFile)
               }
               className="p-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               aria-label="Send message"
-              title="Send message"
+              title={isSending ? 'Sending...' : 'Send message'}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -1272,7 +1215,6 @@ export const ChatPage = ({
               <ShieldCheck className="w-3 h-3" />
               <span>Enter to send</span>
             </span>
-
             <span>Socket.IO enabled</span>
           </div>
         </div>

@@ -6,7 +6,9 @@ const app = express();
 const emailRoutes = require("./routes/emailRoutes");
 const gmailRoutes = require("./routes/gmailRoutes");
 const chatRoutes = require("./routes/chatRoutes");
-const filesRoutes = require("./routes/files")
+const filesRoutes = require("./routes/files");
+const notificationRoutes =require("./routes/notificationRoutes");
+const meetingRoutes = require("./routes/meetingRoutes");
 
 app.use(
   cors({
@@ -28,5 +30,7 @@ app.use("/api/emails",emailRoutes);
 app.use("/api/gmail",gmailRoutes);
 app.use("/api/chats",chatRoutes);
 app.use("/api/files",filesRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 module.exports = app;

@@ -5,22 +5,15 @@ import { InboxPage } from "./pages/InboxPage";
 import { ChatPage } from "./pages/ChatPage";
 import { ContactsPage } from "./pages/ContactsPage";
 import { FilesPage } from "./pages/FilesPage";
-import { MeetPage } from "./pages/MeetPage";
+import MeetPage  from "./pages/MeetPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignUpPage } from "./pages/SignUpPage";
 
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
-
-import {
-  mockEmails,
-  mockConversations as initialConversations,
-  mockChatMessages,
-  mockContacts,
-  mockFiles,
-  mockNotifications as initialNotifs,
-} from "./data/mockData";
+import { getUsers } from "./services/api";
+import { io } from "socket.io-client";
 
 /**
  * Hash route parser:
@@ -76,21 +69,82 @@ export function AppContent() {
   const [routeState, setRouteState] = useState(parseHashRoute);
   const [activeTab, setActiveTab] = useState(routeState.tab || "inbox");
 
-  // Shared workspace state initialized with Relay mock dataset
-  const [notifications, setNotifications] = useState(initialNotifs);
+  // Workspace data starts empty and is populated by the authenticated backend APIs.
+  const [notifications, setNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [emails, setEmails] = useState(mockEmails);
+  const [emails, setEmails] = useState([]);
   const [prefilledRecipient, setPrefilledRecipient] = useState(null);
   const [targetEmailId, setTargetEmailId] = useState(null);
-  const [conversations, setConversations] = useState(initialConversations);
+  const [conversations, setConversations] = useState([]);
   const [targetConversationId, setTargetConversationId] = useState(null);
 
-  // Real contacts loaded from Firestore through the backend
+  // Contacts and files are loaded from authenticated backend APIs.
   const [contacts, setContacts] = useState([]);
+  const [files, setFiles] = useState([]);
+useEffect(() => {
+  const storedUser = localStorage.getItem("relay_demo_user_session");
+  console.log("Stored session:", storedUser);
 
-  const [files, setFiles] = useState(mockFiles);
+  if (!storedUser) return;
 
-  // Load real registered users for Contacts
+  let userId;
+
+  try {
+    userId = JSON.parse(storedUser)?.id;
+  } catch {
+    console.error("Could not read the logged-in user.");
+    return;
+  }
+
+  if (!userId) return;
+
+  const socket = io("http://localhost:5000", {
+    withCredentials: true,
+  });
+
+  // Load existing notifications from Firebase through the backend.
+  const loadNotifications = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/notifications",
+        {
+          headers: {
+            "x-user-id": String(userId),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to load notifications: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      console.error("Notification loading error:", error);
+    }
+  };
+
+  socket.on("connect", () => {
+    socket.emit("join_user", String(userId));
+  });
+
+  socket.on("notification:new", (notification) => {
+    setNotifications((previous) => [
+      notification,
+      ...previous.filter((item) => item.id !== notification.id),
+    ]);
+  });
+
+  loadNotifications();
+
+  return () => {
+    socket.off("connect");
+    socket.off("notification:new");
+    socket.disconnect();
+  };
+}, []);
+  // Load registered users for Contacts from the backend
   useEffect(() => {
     if (!isAuthenticated || !user) {
       setContacts([]);
@@ -142,7 +196,7 @@ export function AppContent() {
 
       addToast({
         title: "Authentication Required",
-        message: "Please sign in to access the Relay workspace.",
+        message: "Please sign in to access ChatFlow.",
         type: "warning",
       });
     }
@@ -177,7 +231,7 @@ export function AppContent() {
     const loggedUser = await login(credentials);
 
     addToast({
-      title: "Welcome to Relay",
+      title: "Welcome to ChatFlow",
       message: `Signed in as ${loggedUser.name} (${loggedUser.department || "Engineering"}).`,
       type: "success",
     });
@@ -190,7 +244,7 @@ export function AppContent() {
     const loggedUser = await loginWithGoogle();
 
     addToast({
-      title: "Welcome to Relay",
+      title: "Welcome to ChatFlow",
       message: `Signed in with Google as ${loggedUser.name || loggedUser.email}.`,
       type: "success",
     });
@@ -217,7 +271,7 @@ export function AppContent() {
 
     addToast({
       title: "Signed Out",
-      message: "You have been signed out of Relay.",
+      message: "You have been signed out of ChatFlow.",
       type: "info",
     });
 
@@ -356,7 +410,7 @@ export function AppContent() {
         <ChatPage
           conversations={conversations}
           onUpdateConversations={setConversations}
-          initialMessages={mockChatMessages}
+          initialMessages={{}}
           searchQuery={searchQuery}
           targetConversationId={targetConversationId}
           onClearTargetConversationId={() => setTargetConversationId(null)}

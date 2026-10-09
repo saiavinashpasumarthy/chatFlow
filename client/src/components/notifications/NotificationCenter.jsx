@@ -98,17 +98,17 @@ export const NotificationCenter = ({
       className="absolute right-0 mt-2 w-80 sm:w-96 md:w-[420px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150 transition-colors"
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-none">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-200 leading-none">
                 Notifications
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-200 mt-1">
                 {unreadCount > 0
                   ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
                   : 'All caught up'}
@@ -311,8 +311,8 @@ export const NotificationCenter = ({
       </div>
 
       {/* Footer / Disclaimer */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-        <span>Mock Notification Center</span>
+      <div className="p-3 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-900 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-500">
+        <span>Notification Center</span>
         <span className="text-[10px] text-slate-400 dark:text-slate-500">Esc to close</span>
       </div>
     </div>

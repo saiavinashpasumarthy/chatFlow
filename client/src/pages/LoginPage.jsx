@@ -166,7 +166,7 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
               <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 Relay
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
-                  Unified Suite
+                  Unified Suite for Effective Comms
                 </span>
               </span>
             </div>
@@ -477,18 +477,10 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
             </button>
           </div>
 
-          {/* Demo Authentication Notice */}
-          <div className="mt-5 p-3 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong className="text-slate-700 dark:text-slate-300 font-semibold">Demo Authentication:</strong> Client-side session simulation is active while backend auth contracts are finalized. Any email &amp; password (6+ chars) or Google sign-in grants access without remote password storage.
-            </p>
+          {/* Footer note */}
+          <div className="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500">
+            Relay Unified Communication Platform • Encrypted & Secure
           </div>
-        </div>
-
-        {/* Footer note */}
-        <div className="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500">
-          Relay Unified Communication Platform • Encrypted & Secure
         </div>
       </div>
     </div>

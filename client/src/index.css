@@ -13,11 +13,16 @@
 
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    @apply bg-slate-50 text-slate-900 transition-colors duration-150;
+    background-color: #f8fafc;
+    color: #0f172a;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark body {
-    @apply bg-slate-950 text-slate-100;
+    background-color: #020617;
+    color: #f8fafc;
   }
 }
 
