@@ -608,3 +608,108 @@ export const mockNotifications = [
     type: 'system'
   }
 ];
+
+export const mockMeetings = [
+  {
+    id: 'meet-1',
+    title: 'Weekly Frontend Architecture & WebRTC Sync',
+    description: 'Review modular canvas components, state synchronization, and media stream layouts.',
+    hostName: 'Alex Rivera',
+    hostEmail: 'alex.rivera@relay.dev',
+    scheduledTime: 'Today, 11:30 AM - 12:15 PM',
+    status: 'upcoming',
+    isLive: true,
+    meetingCode: 'arc-web-syn',
+    meetingLink: 'https://relay.meet/arc-web-syn',
+    participantsCount: 4,
+    attendees: [
+      { id: 'usr-1', name: 'Alex Rivera', role: 'Host', isHost: true, avatarUrl: '', status: 'speaking', micMuted: false, videoOn: true },
+      { id: 'usr-2', name: 'Sarah Jenkins', role: 'Staff Engineer', isHost: false, avatarUrl: '', status: 'listening', micMuted: false, videoOn: true },
+      { id: 'usr-3', name: 'Marcus Vance', role: 'Design Lead', isHost: false, avatarUrl: '', status: 'listening', micMuted: true, videoOn: true },
+      { id: 'usr-4', name: 'Elena Rostova', role: 'Frontend Engineer', isHost: false, avatarUrl: '', status: 'listening', micMuted: true, videoOn: false },
+    ],
+    tags: ['Engineering', 'Architecture']
+  },
+  {
+    id: 'meet-2',
+    title: 'Q4 Product Strategy & Design Critique',
+    description: 'Alignment on unified communications navigation and typography tokens.',
+    hostName: 'Sarah Jenkins',
+    hostEmail: 'sarah.j@enterprise.io',
+    scheduledTime: 'Today, 02:00 PM - 03:00 PM',
+    status: 'upcoming',
+    isLive: false,
+    meetingCode: 'prd-str-q4',
+    meetingLink: 'https://relay.meet/prd-str-q4',
+    participantsCount: 5,
+    attendees: [
+      { id: 'usr-2', name: 'Sarah Jenkins', role: 'Host', isHost: true, avatarUrl: '', micMuted: false, videoOn: true },
+      { id: 'usr-1', name: 'Alex Rivera', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: false, videoOn: true },
+      { id: 'usr-3', name: 'Marcus Vance', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: true, videoOn: true },
+      { id: 'usr-5', name: 'Jordan Hayes', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: false, videoOn: false },
+      { id: 'usr-6', name: 'Devon Clarke', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: true, videoOn: true },
+    ],
+    tags: ['Product', 'Design']
+  },
+  {
+    id: 'meet-3',
+    title: 'Sprint Retrospective & Team Demo',
+    description: 'Bi-weekly retrospective on client performance and offline draft persistence.',
+    hostName: 'Marcus Vance',
+    hostEmail: 'm.vance@venturelabs.co',
+    scheduledTime: 'Tomorrow, 10:00 AM - 11:00 AM',
+    status: 'upcoming',
+    isLive: false,
+    meetingCode: 'spr-ret-dem',
+    meetingLink: 'https://relay.meet/spr-ret-dem',
+    participantsCount: 6,
+    attendees: [
+      { id: 'usr-3', name: 'Marcus Vance', role: 'Host', isHost: true, avatarUrl: '', micMuted: false, videoOn: true },
+      { id: 'usr-1', name: 'Alex Rivera', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: false, videoOn: true },
+      { id: 'usr-4', name: 'Elena Rostova', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: false, videoOn: true },
+      { id: 'usr-2', name: 'Sarah Jenkins', role: 'Attendee', isHost: false, avatarUrl: '', micMuted: true, videoOn: true },
+    ],
+    tags: ['Sprint', 'All-Hands']
+  },
+  {
+    id: 'meet-4',
+    title: 'Staging Latency & Ingress Postmortem',
+    description: 'Root cause analysis of edge latency recovery and asset upload health.',
+    hostName: 'Jordan Hayes',
+    hostEmail: 'jordan.h@relay.dev',
+    scheduledTime: 'Today, 08:30 AM - 09:00 AM',
+    duration: '32 mins',
+    status: 'completed',
+    isLive: false,
+    meetingCode: 'inc-8921-rev',
+    meetingLink: 'https://relay.meet/inc-8921-rev',
+    participantsCount: 4,
+    attendees: [
+      { id: 'usr-5', name: 'Jordan Hayes', role: 'Host', isHost: true },
+      { id: 'usr-1', name: 'Alex Rivera', role: 'Attendee', isHost: false },
+      { id: 'usr-7', name: 'Security Ops', role: 'Attendee', isHost: false }
+    ],
+    tags: ['Infra', 'Incident']
+  },
+  {
+    id: 'meet-5',
+    title: 'UI Component System & Theme Tokens Review',
+    description: 'Exploration of Tailwind contrast ratios, dark mode borders, and accessible keyboard rings.',
+    hostName: 'Elena Rostova',
+    hostEmail: 'elena.r@relay.dev',
+    scheduledTime: 'Yesterday, 03:30 PM - 04:15 PM',
+    duration: '45 mins',
+    status: 'completed',
+    isLive: false,
+    meetingCode: 'ui-tok-rev',
+    meetingLink: 'https://relay.meet/ui-tok-rev',
+    participantsCount: 3,
+    attendees: [
+      { id: 'usr-4', name: 'Elena Rostova', role: 'Host', isHost: true },
+      { id: 'usr-1', name: 'Alex Rivera', role: 'Attendee', isHost: false },
+      { id: 'usr-3', name: 'Marcus Vance', role: 'Attendee', isHost: false }
+    ],
+    tags: ['Design', 'Tokens']
+  }
+];
+

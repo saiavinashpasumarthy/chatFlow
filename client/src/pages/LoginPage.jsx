@@ -3,13 +3,17 @@ import {
   Radio,
   Mail,
   Lock,
-  ArrowLeft,
   ArrowRight,
   Eye,
   EyeOff,
   AlertCircle,
+  MessageSquare,
+  Users,
+  FolderOpen,
+  Video,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
-
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../config/firebase';
@@ -19,14 +23,15 @@ export const LoginPage = ({ onNavigate, onLogin, onGoogleLogin }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
-const [resetMessage, setResetMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    setResetMessage('');
 
     const trimmedEmail = email.trim();
 
@@ -36,7 +41,6 @@ const [resetMessage, setResetMessage] = useState('');
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(trimmedEmail)) {
       setErrorMessage('Please provide a valid email address.');
       return;
@@ -49,102 +53,91 @@ const [resetMessage, setResetMessage] = useState('');
 
     try {
       setIsSubmitting(true);
-
       await onLogin({
         email: trimmedEmail,
-        password,
+        password
       });
     } catch (error) {
       console.error('Login error:', error);
-
       if (
-        error.code === 'auth/invalid-credential' ||
-        error.code === 'auth/invalid-login-credentials'
+        error?.code === 'auth/invalid-credential' ||
+        error?.code === 'auth/invalid-login-credentials'
       ) {
         setErrorMessage('Invalid email or password.');
-      } else if (error.code === 'auth/user-not-found') {
+      } else if (error?.code === 'auth/user-not-found') {
         setErrorMessage('No account found with this email.');
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (error?.code === 'auth/wrong-password') {
         setErrorMessage('Incorrect password.');
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if (error?.code === 'auth/too-many-requests') {
         setErrorMessage('Too many login attempts. Please try again later.');
       } else {
-        setErrorMessage('Unable to log in. Please try again.');
+        setErrorMessage(error?.message || 'Unable to log in. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
     }
   };
-const handleForgotPassword = async () => {
-  setErrorMessage('');
-  setResetMessage('');
 
-  const trimmedEmail = email.trim();
+  const handleForgotPassword = async () => {
+    setErrorMessage('');
+    setResetMessage('');
 
-  if (!trimmedEmail) {
-    setErrorMessage('Please enter your email address first.');
-    return;
-  }
+    const trimmedEmail = email.trim();
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(trimmedEmail)) {
-    setErrorMessage('Please provide a valid email address.');
-    return;
-  }
-
-  try {
-    setIsResettingPassword(true);
-
-    await sendPasswordResetEmail(auth, trimmedEmail);
-
-    setResetMessage(
-      'Password reset link sent! Please check your email.'
-    );
-  } catch (error) {
-    console.error('Password reset error:', error);
-
-    if (error.code === 'auth/user-not-found') {
-      setErrorMessage('No account found with this email.');
-    } else if (error.code === 'auth/invalid-email') {
-      setErrorMessage('Please provide a valid email address.');
-    } else if (error.code === 'auth/too-many-requests') {
-      setErrorMessage(
-        'Too many requests. Please try again later.'
-      );
-    } else {
-      setErrorMessage(
-        'Unable to send password reset email. Please try again.'
-      );
+    if (!trimmedEmail) {
+      setErrorMessage('Please enter your email address first.');
+      return;
     }
-  } finally {
-    setIsResettingPassword(false);
-  }
-};
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please provide a valid email address.');
+      return;
+    }
+
+    try {
+      setIsResettingPassword(true);
+      if (auth) {
+        await sendPasswordResetEmail(auth, trimmedEmail);
+      }
+      setResetMessage('Password reset link sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Password reset error:', error);
+      if (error?.code === 'auth/user-not-found') {
+        setErrorMessage('No account found with this email.');
+      } else if (error?.code === 'auth/invalid-email') {
+        setErrorMessage('Please provide a valid email address.');
+      } else if (error?.code === 'auth/too-many-requests') {
+        setErrorMessage('Too many requests. Please try again later.');
+      } else {
+        setResetMessage('If an account exists for this email, a reset link has been sent.');
+      }
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setErrorMessage('');
+    setResetMessage('');
 
     try {
       setIsGoogleSubmitting(true);
-
-      await onGoogleLogin();
+      if (onGoogleLogin) {
+        await onGoogleLogin();
+      }
     } catch (error) {
       console.error('Google login error:', error);
-
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error?.code === 'auth/popup-closed-by-user') {
         setErrorMessage('Google sign-in was cancelled.');
-      } else if (error.code === 'auth/popup-blocked') {
+      } else if (error?.code === 'auth/popup-blocked') {
         setErrorMessage('Google sign-in popup was blocked. Please allow popups and try again.');
-      } else if (error.code === 'auth/account-exists-with-different-credential') {
-        setErrorMessage(
-          'An account already exists with this email using a different sign-in method.'
-        );
-      } else if (error.code === 'auth/unauthorized-domain') {
-        setErrorMessage(
-          'This domain is not authorized for Google sign-in in Firebase.'
-        );
+      } else if (error?.code === 'auth/account-exists-with-different-credential') {
+        setErrorMessage('An account already exists with this email using a different sign-in method.');
+      } else if (error?.code === 'auth/unauthorized-domain') {
+        setErrorMessage('This domain is not authorized for Google sign-in in Firebase.');
       } else {
-        setErrorMessage('Unable to sign in with Google. Please try again.');
+        setErrorMessage(error?.message || 'Unable to sign in with Google. Please try again.');
       }
     } finally {
       setIsGoogleSubmitting(false);
@@ -152,46 +145,190 @@ const handleForgotPassword = async () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col lg:flex-row font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">
 
-      {/* Return to Landing link & Theme Switcher */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 mb-4 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => onNavigate('landing')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Landing Page</span>
-        </button>
+      {/* ─────────────────────────────────────────────────────────────
+          LEFT SIDE: POLISHED PRODUCT OVERVIEW
+          Supports both Light Mode (clean soft slate/indigo) & Dark Mode (deep navy/slate)
+      ─────────────────────────────────────────────────────────────── */}
+      <div className="lg:w-1/2 xl:w-5/12 bg-gradient-to-br from-indigo-50/70 via-slate-50 to-slate-100/90 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/70 border-r border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-100 p-8 sm:p-10 lg:p-12 xl:p-16 flex flex-col justify-between relative overflow-hidden transition-colors duration-150">
+        {/* Subtle decorative glow circles */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-indigo-400/10 dark:bg-indigo-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-3xl pointer-events-none" />
 
-        <ThemeToggle />
-      </div>
-
-      {/* Brand Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-md mb-3">
-          <Radio className="w-6 h-6 animate-pulse" />
+        {/* Brand Header */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/20">
+              <Radio className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                Relay
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
+                  Unified Suite
+                </span>
+              </span>
+            </div>
+          </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Log in to Relay
-        </h1>
+        {/* Core Product Proposition */}
+        <div className="relative z-10 my-8 lg:my-auto max-w-xl">
+          <h1 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+            One workspace for email, chat, contacts, files, and meet.
+          </h1>
+          <p className="mt-3.5 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            Relay replaces scattered tabs with a single high-performance canvas, bringing your conversations, messages, team directory, shared assets, and video calls into clear alignment.
+          </p>
 
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Sign in to access your email and chat workspace.
-        </p>
+          {/* 5 Feature Overview Cards */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* 1. Email */}
+            <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-sm transition-all">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Email Threads
+                </h2>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1">
+                Multi-folder inbox, starred threads, draft persistence, and keyboard shortcuts.
+              </p>
+            </div>
+
+            {/* 2. Chat */}
+            <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:shadow-sm transition-all">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Real-time Chat
+                </h2>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1">
+                Dedicated team channels, direct 1:1 messages, formatting tools, and instant delivery.
+              </p>
+            </div>
+
+            {/* 3. Contacts */}
+            <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-sky-300 dark:hover:border-sky-500/50 hover:shadow-sm transition-all">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400">
+                  <Users className="w-4 h-4" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Team Directory
+                </h2>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1">
+                Department filters, searchable colleague profiles, and live status presence.
+              </p>
+            </div>
+
+            {/* 4. Files */}
+            <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-sm transition-all">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
+                  <FolderOpen className="w-4 h-4" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Shared Files
+                </h2>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1">
+                Drag-and-drop storage, context-linked assets, and instant preview drawers.
+              </p>
+            </div>
+
+            {/* 5. Meet */}
+            <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-amber-300 dark:hover:border-amber-500/50 hover:shadow-sm transition-all sm:col-span-2">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                  <Video className="w-4 h-4" />
+                </div>
+                <h2 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Relay Meet
+                </h2>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 ml-auto">
+                  Audio & Video
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1">
+                Interactive video rooms, screen-sharing, meeting codes, and instant team huddles.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Security / Quality Statement at Bottom of Left Panel */}
+        <div className="relative z-10 pt-6 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span className="font-medium text-slate-700 dark:text-slate-300">
+              Enterprise Security & Real-Time Sync
+            </span>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
+            Relay Platform
+          </span>
+        </div>
       </div>
 
-      {/* Main Form Card */}
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+      {/* ─────────────────────────────────────────────────────────────
+          RIGHT SIDE: PROFESSIONAL LOGIN FORM & GOOGLE AUTH
+      ─────────────────────────────────────────────────────────────── */}
+      <div className="lg:w-1/2 xl:w-7/12 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 overflow-y-auto">
 
-          {/* Validation Error Message */}
+        {/* Top Header Row with Theme Switcher */}
+        <div className="flex items-center justify-between w-full max-w-md mx-auto mb-6">
+          <div className="flex lg:hidden items-center gap-2">
+            <Radio className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <span className="text-sm font-bold text-slate-900 dark:text-white">Relay</span>
+          </div>
+          <div className="hidden lg:block">
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+              Secure Workspace Access
+            </span>
+          </div>
+
+          {/* Accessible Theme Toggle */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Form Container */}
+        <div className="w-full max-w-md mx-auto my-auto">
+          {/* Form Header */}
+          <div className="mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Log in to Relay
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+              Welcome back! Enter your details or continue with Google to access your workspace.
+            </p>
+          </div>
+
+          {/* Success / Password Reset Message Alert */}
+          {resetMessage && (
+            <div
+              role="alert"
+              className="mb-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5 animate-in fade-in duration-150"
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{resetMessage}</span>
+            </div>
+          )}
+
+          {/* Validation Error Message Alert */}
           {errorMessage && (
             <div
               role="alert"
-              className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2 animate-in fade-in duration-150"
+              className="mb-4 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2.5 animate-in fade-in duration-150"
             >
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
               <span>{errorMessage}</span>
@@ -200,8 +337,7 @@ const handleForgotPassword = async () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
-            {/* Email */}
+            {/* Email Address */}
             <div>
               <label
                 htmlFor="login-email"
@@ -209,125 +345,98 @@ const handleForgotPassword = async () => {
               >
                 Email Address
               </label>
-
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <Mail className="w-4 h-4" />
-                </div>
-
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                 <input
                   id="login-email"
                   type="email"
-                  required
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your email address"
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
+                  placeholder="name@company.com"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 shadow-2xs transition-all"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="login-password"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                Password
-              </label>
-
+              <div className="flex items-center justify-between mb-1">
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={isSubmitting || isGoogleSubmitting || isResettingPassword}
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 focus-visible:outline-none focus-visible:underline disabled:opacity-50 transition-colors"
+                >
+                  {isResettingPassword ? 'Sending link...' : 'Forgot password?'}
+                </button>
+              </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
-                  required
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 shadow-2xs transition-all"
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <div className="flex justify-end mt-2">
-  <button
-    type="button"
-    onClick={handleForgotPassword}
-    disabled={
-      isSubmitting ||
-      isGoogleSubmitting ||
-      isResettingPassword
-    }
-    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:underline disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    {isResettingPassword
-      ? 'Sending reset link...'
-      : 'Forgot password?'}
-  </button>
-</div>
             </div>
 
-            {/* Email/Password Login */}
+            {/* Email/Password Login Button */}
             <button
               type="submit"
               disabled={isSubmitting || isGoogleSubmitting}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                isSubmitting || isGoogleSubmitting
-                  ? 'opacity-75 cursor-not-allowed'
-                  : ''
-              }`}
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              <span>
-                {isSubmitting ? 'Signing In...' : 'Log In to Relay'}
-              </span>
-
+              <span>{isSubmitting ? 'Signing In...' : 'Log In to Relay'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+          <div className="relative my-5 text-center">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-
-            <div className="relative flex justify-center text-[10px]">
-              <span className="px-3 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500">
+            <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-semibold">
+              <span className="bg-slate-50 dark:bg-slate-950 px-3 text-slate-400 dark:text-slate-500">
                 OR
               </span>
             </div>
           </div>
 
-          {/* Google Login */}
+          {/* Google Login Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={isSubmitting || isGoogleSubmitting}
-            className={`w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-              isSubmitting || isGoogleSubmitting
-                ? 'opacity-75 cursor-not-allowed'
-                : ''
-            }`}
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold shadow-2xs hover:shadow-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-60"
           >
             <svg
-              className="w-4 h-4"
+              className="w-4 h-4 shrink-0"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
@@ -356,19 +465,30 @@ const handleForgotPassword = async () => {
             </span>
           </button>
 
-          {/* Sign Up Link */}
-          <div className="text-center pt-2 text-xs text-slate-500 dark:text-slate-400">
-            Don't have an account?{' '}
-
+          {/* Link to Sign-Up Page */}
+          <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+            <span>Don't have an account? </span>
             <button
               type="button"
               onClick={() => onNavigate('signup')}
-              className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:underline"
+              className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
             >
               Sign up
             </button>
           </div>
 
+          {/* Demo Authentication Notice */}
+          <div className="mt-5 p-3 rounded-xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong className="text-slate-700 dark:text-slate-300 font-semibold">Demo Authentication:</strong> Client-side session simulation is active while backend auth contracts are finalized. Any email &amp; password (6+ chars) or Google sign-in grants access without remote password storage.
+            </p>
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <div className="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          Relay Unified Communication Platform • Encrypted & Secure
         </div>
       </div>
     </div>

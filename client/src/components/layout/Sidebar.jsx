@@ -4,6 +4,7 @@ import {
   MessageSquare,
   Users,
   FolderOpen,
+  Video,
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
@@ -35,6 +36,13 @@ export const Sidebar = ({
       icon: MessageSquare,
       badge: unreadChatCount,
       badgeColor: 'bg-indigo-600 text-white'
+    },
+    {
+      id: 'meet',
+      label: 'Meet',
+      icon: Video,
+      badge: 1,
+      badgeColor: 'bg-emerald-600 text-white'
     },
     {
       id: 'contacts',
