@@ -5,7 +5,7 @@ import { InboxPage } from "./pages/InboxPage";
 import { ChatPage } from "./pages/ChatPage";
 import { ContactsPage } from "./pages/ContactsPage";
 import { FilesPage } from "./pages/FilesPage";
-import { LandingPage } from "./pages/LandingPage";
+import { MeetPage } from "./pages/MeetPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignUpPage } from "./pages/SignUpPage";
 
@@ -14,25 +14,23 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
 import {
+  mockEmails,
   mockConversations as initialConversations,
   mockChatMessages,
+  mockContacts,
   mockFiles,
   mockNotifications as initialNotifs,
 } from "./data/mockData";
 
-import { getUsers } from "./services/api";
-
+/**
+ * Hash route parser:
+ * - Directs initial visitors and root hash (# or #/) directly to the split-screen login page.
+ * - Supports #/login, #/signup, and protected #/app/<tab> routes.
+ */
 const parseHashRoute = () => {
   const hash = window.location.hash || "";
 
-  if (!hash || hash === "#" || hash === "#/" || hash === "#/landing") {
-    return {
-      view: "landing",
-      tab: "inbox",
-    };
-  }
-
-  if (hash === "#/login") {
+  if (!hash || hash === "#" || hash === "#/" || hash === "#/login" || hash === "#/landing") {
     return {
       view: "login",
       tab: "inbox",
@@ -57,7 +55,7 @@ const parseHashRoute = () => {
   }
 
   return {
-    view: "landing",
+    view: "login",
     tab: "inbox",
   };
 };
@@ -78,55 +76,21 @@ export function AppContent() {
   const [routeState, setRouteState] = useState(parseHashRoute);
   const [activeTab, setActiveTab] = useState(routeState.tab || "inbox");
 
-  // Shared workspace state
+  // Shared workspace state initialized with Relay mock dataset
   const [notifications, setNotifications] = useState(initialNotifs);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const [emails, setEmails] = useState([]);
+  const [emails, setEmails] = useState(mockEmails);
   const [prefilledRecipient, setPrefilledRecipient] = useState(null);
   const [targetEmailId, setTargetEmailId] = useState(null);
-
   const [conversations, setConversations] = useState(initialConversations);
   const [targetConversationId, setTargetConversationId] = useState(null);
-
-  // Real contacts loaded from Firestore through the backend
-  const [contacts, setContacts] = useState([]);
-
+  const [contacts, setContacts] = useState(mockContacts);
   const [files, setFiles] = useState(mockFiles);
-
-  // Load real registered users for Contacts
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setContacts([]);
-      return;
-    }
-
-    const loadContacts = async () => {
-      try {
-        const data = await getUsers();
-
-        setContacts(data.users || []);
-      } catch (error) {
-        console.error("Failed to load contacts:", error);
-
-        addToast({
-          title: "Contacts Error",
-          message: error.message || "Failed to load contacts.",
-          type: "error",
-        });
-
-        setContacts([]);
-      }
-    };
-
-    loadContacts();
-  }, [isAuthenticated, user, addToast]);
 
   // Sync route on hashchange
   useEffect(() => {
     const handleHashChange = () => {
       const nextRoute = parseHashRoute();
-
       setRouteState(nextRoute);
 
       if (nextRoute.view === "app" && nextRoute.tab) {
@@ -135,20 +99,19 @@ export function AppContent() {
     };
 
     window.addEventListener("hashchange", handleHashChange);
-
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
     };
   }, []);
 
-  // Protected route enforcement
+  // Protected route enforcement: unauthenticated visitors opening #/app/* are redirected to #/login
   useEffect(() => {
     if (routeState.view === "app" && !isAuthenticated) {
       window.location.hash = "#/login";
 
       addToast({
         title: "Authentication Required",
-        message: "Please log in to access the Relay workspace.",
+        message: "Please sign in to access the Relay workspace.",
         type: "warning",
       });
     }
@@ -164,9 +127,7 @@ export function AppContent() {
   );
 
   const navigateTo = useCallback((view, tab = "inbox") => {
-    if (view === "landing") {
-      window.location.hash = "#/";
-    } else if (view === "login") {
+    if (view === "login" || view === "landing") {
       window.location.hash = "#/login";
     } else if (view === "signup") {
       window.location.hash = "#/signup";
@@ -180,45 +141,56 @@ export function AppContent() {
     window.location.hash = `#/app/${tab}`;
   };
 
-  // Real Firebase login
+  // Login handler
   const handleLogin = async (credentials) => {
     const loggedUser = await login(credentials);
 
     addToast({
-      title: "Welcome Back",
-      message: `Signed in as ${loggedUser.name || loggedUser.email}.`,
+      title: "Welcome to Relay",
+      message: `Signed in as ${loggedUser.name} (${loggedUser.department || "Engineering"}).`,
       type: "success",
     });
 
     navigateTo("app", "inbox");
   };
 
-  // Real account signup
+  // Google Login handler
+  const handleGoogleLogin = async () => {
+    const loggedUser = await loginWithGoogle();
+
+    addToast({
+      title: "Welcome to Relay",
+      message: `Signed in with Google as ${loggedUser.name || loggedUser.email}.`,
+      type: "success",
+    });
+
+    navigateTo("app", "inbox");
+  };
+
+  // Sign-up handler
   const handleSignup = async (profileData) => {
     const newUser = await signup(profileData);
 
     addToast({
       title: "Account Created",
-      message: `Welcome to Relay, ${newUser.name || newUser.email}!`,
+      message: `Welcome to Relay, ${newUser.name}!`,
       type: "success",
     });
 
     navigateTo("app", "inbox");
   };
 
+  // Logout handler returning to split-screen login page
   const handleLogout = async () => {
     await logout();
 
-    setContacts([]);
-    setConversations([]);
-
     addToast({
-      title: "Logged Out",
+      title: "Signed Out",
       message: "You have been signed out of Relay.",
       type: "info",
     });
 
-    navigateTo("landing");
+    navigateTo("login");
   };
 
   const handleMarkNotificationsRead = () => {
@@ -255,36 +227,30 @@ export function AppContent() {
 
   const handleNavigateFromNotification = ({
     targetTab,
-    targetEmailId,
+    targetEmailId: tEmailId,
     targetConvId,
   }) => {
     if (targetTab) {
       handleSelectTab(targetTab);
     }
-
-    if (targetEmailId) {
-      setTargetEmailId(targetEmailId);
+    if (tEmailId) {
+      setTargetEmailId(tEmailId);
     }
-
     if (targetConvId) {
       setTargetConversationId(targetConvId);
     }
   };
 
-  // ContactsPage creates/opens the real conversation.
-  // App only receives the conversation ID and opens Chat.
-  const handleStartChatFromContact = (contact, conversationId) => {
-    if (!conversationId) {
-      addToast({
-        title: "Chat Error",
-        message: "Conversation could not be opened.",
-        type: "error",
-      });
-
-      return;
+  const handleStartChatFromContact = (target) => {
+    if (typeof target === "string") {
+      // Find conversation by participant name or set active
+      const match = conversations.find((c) =>
+        c.name.toLowerCase().includes(target.toLowerCase())
+      );
+      if (match) {
+        setTargetConversationId(match.id);
+      }
     }
-
-    setTargetConversationId(conversationId);
     handleSelectTab("chat");
   };
 
@@ -293,36 +259,19 @@ export function AppContent() {
     handleSelectTab("inbox");
   };
 
-  // 1. Landing Page
-  if (routeState.view === "landing") {
-    return <LandingPage onNavigate={navigateTo} />;
-  }
-
-  // 2. Login Page
-  if (routeState.view === "login") {
+  // 1. Split-screen Login Page (default entry point)
+  if (routeState.view === "login" || (!isAuthenticated && routeState.view !== "signup")) {
     return (
       <LoginPage
         onNavigate={navigateTo}
         onLogin={handleLogin}
-        onGoogleLogin={async () => {
-          const loggedUser = await loginWithGoogle();
-
-          addToast({
-            title: "Welcome Back",
-            message: `Signed in as ${
-              loggedUser.name || loggedUser.email
-            }.`,
-            type: "success",
-          });
-
-          navigateTo("app", "inbox");
-        }}
+        onGoogleLogin={handleGoogleLogin}
       />
     );
   }
 
-  // 3. Sign Up Page
-  if (routeState.view === "signup") {
+  // 2. Sign Up Page
+  if (routeState.view === "signup" && !isAuthenticated) {
     return (
       <SignUpPage
         onNavigate={navigateTo}
@@ -331,9 +280,15 @@ export function AppContent() {
     );
   }
 
-  // 4. Protected Workspace
+  // 3. Protected Workspace (Inbox, Chat, Contacts, Files)
   if (!isAuthenticated || !user) {
-    return null;
+    return (
+      <LoginPage
+        onNavigate={navigateTo}
+        onLogin={handleLogin}
+        onGoogleLogin={handleGoogleLogin}
+      />
+    );
   }
 
   return (
@@ -360,9 +315,7 @@ export function AppContent() {
           onUpdateEmails={setEmails}
           searchQuery={searchQuery}
           prefilledRecipient={prefilledRecipient}
-          onClearPrefilledRecipient={() =>
-            setPrefilledRecipient(null)
-          }
+          onClearPrefilledRecipient={() => setPrefilledRecipient(null)}
           targetEmailId={targetEmailId}
           onClearTargetEmailId={() => setTargetEmailId(null)}
         />
@@ -375,15 +328,14 @@ export function AppContent() {
           initialMessages={mockChatMessages}
           searchQuery={searchQuery}
           targetConversationId={targetConversationId}
-          onClearTargetConversationId={() =>
-            setTargetConversationId(null)
-          }
+          onClearTargetConversationId={() => setTargetConversationId(null)}
         />
       )}
 
       {activeTab === "contacts" && (
         <ContactsPage
           contacts={contacts}
+          onUpdateContacts={setContacts}
           searchQuery={searchQuery}
           onStartChat={handleStartChatFromContact}
           onSendEmail={handleSendEmailFromContact}
@@ -396,6 +348,13 @@ export function AppContent() {
           onUpdateFiles={setFiles}
           searchQuery={searchQuery}
           onNavigateTab={handleSelectTab}
+        />
+      )}
+
+      {activeTab === "meet" && (
+        <MeetPage
+          currentUser={user}
+          searchQuery={searchQuery}
         />
       )}
     </AppShell>

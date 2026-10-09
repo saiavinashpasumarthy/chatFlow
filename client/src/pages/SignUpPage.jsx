@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import {
   Radio,
   Mail,
@@ -11,8 +10,9 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
-
 import { ThemeToggle } from '../components/common/ThemeToggle';
 
 export const SignUpPage = ({ onNavigate, onSignup }) => {
@@ -32,7 +32,7 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
     const trimmedEmail = email.trim();
 
     if (!trimmedName) {
-      setErrorMessage('Please enter your name.');
+      setErrorMessage('Please enter your full name.');
       return;
     }
 
@@ -42,9 +42,8 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(trimmedEmail)) {
-      setErrorMessage('Please provide a valid email address.');
+      setErrorMessage('Please provide a valid email address (e.g. name@relay.dev).');
       return;
     }
 
@@ -55,27 +54,14 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
 
     try {
       setIsSubmitting(true);
-
       await onSignup({
         name: trimmedName,
         email: trimmedEmail,
         password,
-        department,
+        department
       });
     } catch (error) {
-      console.error('Signup error:', error);
-
-      if (error.code === 'auth/email-already-in-use') {
-        setErrorMessage('An account already exists with this email.');
-      } else if (error.code === 'auth/invalid-email') {
-        setErrorMessage('Please provide a valid email address.');
-      } else if (error.code === 'auth/weak-password') {
-        setErrorMessage('Password must be at least 6 characters long.');
-      } else if (error.code === 'auth/operation-not-allowed') {
-        setErrorMessage('Email and password sign-up is not enabled.');
-      } else {
-        setErrorMessage('Unable to create account. Please try again.');
-      }
+      setErrorMessage(error.message || 'Unable to create account.');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,22 +70,22 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-150">
 
-      {/* Return to Landing link & Theme Switcher */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 mb-4 flex items-center justify-between">
+      {/* Top Navigation Row: Back to Login link & Theme Switcher */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg px-4 mb-4 flex items-center justify-between">
         <button
           type="button"
-          onClick={() => onNavigate('landing')}
+          onClick={() => onNavigate('login')}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Landing Page</span>
+          <span>Back to Sign In</span>
         </button>
 
         <ThemeToggle />
       </div>
 
       {/* Brand Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
+      <div className="sm:mx-auto sm:w-full sm:max-w-lg text-center px-4">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-md mb-3">
           <Radio className="w-6 h-6 animate-pulse" />
         </div>
@@ -108,13 +94,13 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
           Create your Relay account
         </h1>
 
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Get started with your unified email and chat workspace.
+        <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          Set up your workspace profile to start collaborating.
         </p>
       </div>
 
       {/* Main Form Card */}
-      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-lg px-4">
         <div className="bg-white dark:bg-slate-900 py-8 px-6 sm:px-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
 
           {/* Validation Error Message */}
@@ -139,21 +125,19 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
               >
                 Full Name
               </label>
-
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <User className="w-4 h-4" />
-                </div>
-
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   id="signup-name"
                   type="text"
-                  required
                   autoComplete="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your full name"
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
+                  placeholder="e.g. Jordan Hayes"
+                  className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
                 />
               </div>
             </div>
@@ -164,23 +148,21 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
                 htmlFor="signup-email"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                Work Email
+                Work Email Address
               </label>
-
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <Mail className="w-4 h-4" />
-                </div>
-
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   id="signup-email"
                   type="email"
-                  required
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
+                  placeholder="e.g. jordan.hayes@relay.dev"
+                  className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
                 />
               </div>
             </div>
@@ -193,98 +175,82 @@ export const SignUpPage = ({ onNavigate, onSignup }) => {
               >
                 Department
               </label>
-
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <Building className="w-4 h-4" />
-                </div>
-
+                <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <select
                   id="signup-dept"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white transition-all cursor-pointer"
                 >
                   <option value="Engineering">Engineering</option>
                   <option value="Design">Design</option>
                   <option value="Product">Product</option>
-                  <option value="DevOps">DevOps</option>
-                  <option value="Marketing">Marketing</option>
                   <option value="Operations">Operations</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Advisory">Advisory</option>
                 </select>
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="signup-password"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                Password
-              </label>
-
+              <div className="flex items-center justify-between mb-1">
+                <label
+                  htmlFor="signup-password"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  Password
+                </label>
+                <span className="text-[11px] text-slate-400">
+                  Minimum 6 characters
+                </span>
+              </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                  <Lock className="w-4 h-4" />
-                </div>
-
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   id="signup-password"
                   type={showPassword ? 'text' : 'password'}
-                  required
                   autoComplete="new-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-10 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-800 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-10 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 transition-all"
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-
-              <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
-                Password must contain at least 6 characters.
-              </p>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
-              }`}
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-60 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              <span>
-                {isSubmitting ? 'Creating Account...' : 'Create Account'}
-              </span>
-
+              <span>{isSubmitting ? 'Creating account...' : 'Create Account'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          {/* Log In Link */}
-          <div className="text-center pt-2 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
-            Already have an account?{' '}
-
+          {/* Link to Login */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+            <span>Already have an account? </span>
             <button
               type="button"
               onClick={() => onNavigate('login')}
-              className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors focus-visible:outline-none focus-visible:underline"
+              className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
             >
-              Log in
+              Sign in
             </button>
           </div>
 
