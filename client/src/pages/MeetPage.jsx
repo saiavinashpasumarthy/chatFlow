@@ -434,21 +434,21 @@ export default function MeetPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1220] px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 transition-colors duration-150 dark:bg-[#0B1220] dark:text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
         {/* Page heading */}
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-400">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
               <Video size={17} />
               <span>Real-time meetings</span>
             </div>
 
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
               Meet
             </h1>
 
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-400 sm:text-base">
               Create a room, join your team, and collaborate face to face.
             </p>
           </div>
@@ -458,7 +458,7 @@ export default function MeetPage({
               type="button"
               onClick={handleStartInstantMeeting}
               disabled={isStarting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-slate-600 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700"
             >
               {isStarting ? (
                 <LoaderCircle size={18} className="animate-spin" />
@@ -471,7 +471,7 @@ export default function MeetPage({
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 transition hover:bg-blue-400"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/15 transition hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400"
             >
               <Plus size={19} />
               Schedule meeting
@@ -480,20 +480,20 @@ export default function MeetPage({
         </div>
 
         {/* Join by code */}
-        <section className="relative overflow-hidden rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/10 via-[#111C30] to-[#111827] p-5 sm:p-7">
+        <section className="relative overflow-hidden rounded-2xl border border-blue-200/80 bg-gradient-to-br from-blue-50/70 via-indigo-50/30 to-white p-5 shadow-xs transition-colors dark:border-blue-400/20 dark:from-blue-500/10 dark:via-[#111C30] dark:to-[#111827] sm:p-7">
           <div className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
 
           <div className="relative grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300">
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
                 <LogIn size={22} />
               </div>
 
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                 Join a meeting
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-slate-400">
+              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
                 Have a meeting code? Enter it here to join the room.
               </p>
             </div>
@@ -515,13 +515,13 @@ export default function MeetPage({
                   setJoinCodeInput(event.target.value.toUpperCase())
                 }
                 placeholder="Enter meeting code"
-                className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-[#0B1220]/80 px-4 py-3 text-sm tracking-wider text-white outline-none transition placeholder:tracking-normal placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/15"
+                className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm tracking-wider text-slate-900 outline-none transition placeholder:tracking-normal placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 dark:border-slate-700 dark:bg-[#0B1220]/80 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-400"
               />
 
               <button
                 type="submit"
                 disabled={isJoining || !joinCodeInput.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-400"
               >
                 {isJoining ? (
                   <LoaderCircle size={17} className="animate-spin" />
@@ -536,30 +536,30 @@ export default function MeetPage({
 
         {/* Meeting statistics */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-colors dark:border-slate-800 dark:bg-[#111827]">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400">Upcoming meetings</span>
-              <CalendarDays size={19} className="text-blue-400" />
+              <span className="text-sm text-slate-500 dark:text-slate-400">Upcoming meetings</span>
+              <CalendarDays size={19} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="mt-3 text-3xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {upcomingCount}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-colors dark:border-slate-800 dark:bg-[#111827]">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400">Live now</span>
-              <Radio size={19} className="text-emerald-400" />
+              <span className="text-sm text-slate-500 dark:text-slate-400">Live now</span>
+              <Radio size={19} className="text-emerald-500 dark:text-emerald-400" />
             </div>
-            <p className="mt-3 text-3xl font-bold text-white">{liveCount}</p>
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{liveCount}</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-[#111827] p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-colors dark:border-slate-800 dark:bg-[#111827]">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400">Past meetings</span>
-              <History size={19} className="text-violet-400" />
+              <span className="text-sm text-slate-500 dark:text-slate-400">Past meetings</span>
+              <History size={19} className="text-violet-600 dark:text-violet-400" />
             </div>
-            <p className="mt-3 text-3xl font-bold text-white">{pastCount}</p>
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">{pastCount}</p>
           </div>
         </div>
 
@@ -567,10 +567,10 @@ export default function MeetPage({
         <section>
           <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                 Your meetings
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Meetings associated with your account.
               </p>
             </div>
@@ -579,7 +579,7 @@ export default function MeetPage({
               type="button"
               onClick={loadMeetings}
               disabled={isLoadingMeetings}
-              className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-800 disabled:opacity-50 sm:self-auto"
+              className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:self-auto"
             >
               <RefreshCw
                 size={15}
@@ -602,8 +602,8 @@ export default function MeetPage({
                 onClick={() => setActiveTabFilter(tab.id)}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                   activeTabFilter === tab.id
-                    ? 'bg-blue-500 text-white'
-                    : 'border border-slate-800 bg-[#111827] text-slate-400 hover:border-slate-700 hover:text-white'
+                    ? 'bg-blue-600 text-white dark:bg-blue-500'
+                    : 'border border-slate-200 bg-white text-slate-600 shadow-2xs hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-[#111827] dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -612,12 +612,12 @@ export default function MeetPage({
           </div>
 
           {isLoadingMeetings ? (
-            <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-slate-800 bg-[#111827]">
+            <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
               <LoaderCircle
                 size={28}
-                className="animate-spin text-blue-400"
+                className="animate-spin text-blue-600 dark:text-blue-400"
               />
-              <p className="mt-3 text-sm text-slate-400">
+              <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
                 Loading your meetings…
               </p>
             </div>
@@ -625,25 +625,25 @@ export default function MeetPage({
             <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
               <AlertCircle
                 size={28}
-                className="mx-auto text-red-400"
+                className="mx-auto text-red-500 dark:text-red-400"
               />
-              <h3 className="mt-3 font-semibold text-white">
+              <h3 className="mt-3 font-semibold text-slate-900 dark:text-white">
                 Could not load meetings
               </h3>
-              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
+              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-600 dark:text-slate-400">
                 {meetingsError}
               </p>
               <button
                 type="button"
                 onClick={loadMeetings}
-                className="mt-4 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700"
               >
                 Try again
               </button>
             </div>
           ) : filteredMeetings.length === 0 ? (
-            <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 bg-[#111827]/60 px-5 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-slate-400">
+            <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/70 px-5 text-center dark:border-slate-700 dark:bg-[#111827]/60">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 {activeTabFilter === 'past' ? (
                   <History size={25} />
                 ) : (
@@ -651,7 +651,7 @@ export default function MeetPage({
                 )}
               </div>
 
-              <h3 className="mt-4 text-lg font-semibold text-white">
+              <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
                 {normalizedSearch
                   ? 'No matching meetings'
                   : activeTabFilter === 'past'
@@ -661,7 +661,7 @@ export default function MeetPage({
                       : 'No meetings yet'}
               </h3>
 
-              <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
+              <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
                 {normalizedSearch
                   ? 'Try another search term.'
                   : 'Start an instant meeting or schedule one to see it here.'}
@@ -671,7 +671,7 @@ export default function MeetPage({
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400"
                 >
                   <Plus size={17} />
                   Schedule a meeting
@@ -689,15 +689,15 @@ export default function MeetPage({
                 return (
                   <article
                     key={meeting.id || meeting.meetingCode}
-                    className="group rounded-2xl border border-slate-800 bg-[#111827] p-5 transition hover:border-slate-700 hover:bg-[#131D2E] sm:p-6"
+                    className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-slate-300 hover:bg-slate-50/60 dark:border-slate-800 dark:bg-[#111827] dark:hover:border-slate-700 dark:hover:bg-[#131D2E] sm:p-6"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
                         <div
                           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
                             isLive
-                              ? 'bg-emerald-500/10 text-emerald-400'
-                              : 'bg-blue-500/10 text-blue-400'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                           }`}
                         >
                           {isLive ? (
@@ -708,12 +708,12 @@ export default function MeetPage({
                         </div>
 
                         <div className="min-w-0">
-                          <h3 className="break-words text-base font-semibold text-white">
+                          <h3 className="break-words text-base font-semibold text-slate-900 dark:text-white">
                             {meeting.title}
                           </h3>
-                          <p className="mt-1 text-xs text-slate-500">
+                          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                             Code:{' '}
-                            <span className="font-mono tracking-wider text-slate-300">
+                            <span className="font-mono tracking-wider text-slate-700 dark:text-slate-300">
                               {meeting.meetingCode}
                             </span>
                           </p>
@@ -723,10 +723,10 @@ export default function MeetPage({
                       <span
                         className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
                           isLive
-                            ? 'bg-emerald-500/10 text-emerald-400'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                             : isPast
-                              ? 'bg-slate-700/60 text-slate-400'
-                              : 'bg-blue-500/10 text-blue-300'
+                              ? 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-400'
+                              : 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
                         }`}
                       >
                         {isLive
@@ -738,19 +738,19 @@ export default function MeetPage({
                     </div>
 
                     {meeting.description && (
-                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-400">
+                      <p className="mt-4 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
                         {meeting.description}
                       </p>
                     )}
 
-                    <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-400">
+                    <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-500 dark:text-slate-400">
                       <span className="inline-flex items-center gap-2">
-                        <Clock size={15} className="text-slate-500" />
+                        <Clock size={15} className="text-slate-400 dark:text-slate-500" />
                         {meeting.scheduledTime}
                       </span>
 
                       <span className="inline-flex items-center gap-2">
-                        <Users size={15} className="text-slate-500" />
+                        <Users size={15} className="text-slate-400 dark:text-slate-500" />
                         {meeting.participantsCount}{' '}
                         {meeting.participantsCount === 1
                           ? 'participant'
@@ -758,10 +758,10 @@ export default function MeetPage({
                       </span>
                     </div>
 
-                    <div className="mt-5 border-t border-slate-800 pt-4">
-                      <p className="mb-4 text-xs text-slate-500">
+                    <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+                      <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
                         Hosted by{' '}
-                        <span className="text-slate-300">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
                           {meeting.hostName}
                         </span>
                       </p>
@@ -783,7 +783,7 @@ export default function MeetPage({
                               setJoinCodeInput(meeting.meetingCode);
                               handleJoinByCodeFromCard(meeting.meetingCode);
                             }}
-                            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-400"
+                            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400"
                           >
                             <Video size={16} />
                             {isLive ? 'Join now' : 'Join meeting'}
@@ -793,7 +793,7 @@ export default function MeetPage({
                         <button
                           type="button"
                           onClick={() => setSelectedDetailsMeeting(meeting)}
-                          className="rounded-lg border border-slate-700 px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                         >
                           Details
                         </button>
@@ -804,10 +804,10 @@ export default function MeetPage({
                             onClick={() => handleCopyLink(meeting)}
                             title="Copy meeting link"
                             aria-label="Copy meeting link"
-                            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-slate-700 px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                            className="ml-auto inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-2xs transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                           >
                             {copiedId === meeting.id ? (
-                              <Check size={16} className="text-emerald-400" />
+                              <Check size={16} className="text-emerald-500 dark:text-emerald-400" />
                             ) : (
                               <Copy size={16} />
                             )}

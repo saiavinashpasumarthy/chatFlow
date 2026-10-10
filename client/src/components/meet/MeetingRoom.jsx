@@ -105,7 +105,7 @@ function VideoTile({
   }, [stream, cameraOff]);
 
   return (
-    <div className="relative flex min-h-0 min-w-0 aspect-video items-center justify-center overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-lg">
+    <div className="relative flex min-h-0 min-w-0 aspect-video items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-200/80 shadow-md transition-colors dark:border-slate-800 dark:bg-slate-900 dark:shadow-lg">
       <video
         ref={videoRef}
         autoPlay
@@ -118,10 +118,10 @@ function VideoTile({
 
       {!hasVideo && (
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 text-xl font-bold text-indigo-300">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-300 bg-white text-xl font-bold text-indigo-600 shadow-xs dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300">
             {getInitials(name)}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             {cameraOff || !stream?.getVideoTracks().length ? (
               <>
                 <VideoOff className="h-3.5 w-3.5" />
@@ -849,30 +849,30 @@ useEffect(() => {
   
 
   return (
-    <div className="relative flex h-[calc(100vh-4rem)] w-full select-none flex-col overflow-hidden bg-slate-950 font-sans text-white">
-      <header className="z-20 flex shrink-0 items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/95 px-4 py-3 backdrop-blur-md">
+    <div className="relative flex h-[calc(100vh-4rem)] w-full select-none flex-col overflow-hidden bg-slate-100 font-sans text-slate-900 transition-colors duration-150 dark:bg-slate-950 dark:text-white">
+      <header className="z-20 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
             <VideoIcon className="h-4 w-4" />
           </div>
 
           <div className="min-w-0">
-            <h1 className="max-w-md truncate text-sm font-bold">
+            <h1 className="max-w-md truncate text-sm font-bold text-slate-900 dark:text-white">
               {meeting?.title || 'Meeting Room'}
             </h1>
 
-            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-              <span className="font-mono text-indigo-300">{meetingCode}</span>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="font-mono text-indigo-600 dark:text-indigo-300">{meetingCode}</span>
               <span>·</span>
               <span className="font-mono">{formatDuration(secondsElapsed)}</span>
               <span>·</span>
               <span
                 className={
                   connectionStatus === 'connected'
-                    ? 'text-emerald-400'
+                    ? 'text-emerald-600 dark:text-emerald-400'
                     : connectionStatus === 'error'
-                      ? 'text-rose-400'
-                      : 'text-amber-300'
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-amber-600 dark:text-amber-300'
                 }
               >
                 {connectionStatus === 'connected'
@@ -886,29 +886,29 @@ useEffect(() => {
             </div>
           </div>
         </div>
-<button
-  type="button"
-  onClick={handleToggleFullscreen}
-  title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-  aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-  className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-500 hover:bg-slate-700"
->
-  {isFullscreen ? (
-    <Minimize2 className="h-4 w-4" />
-  ) : (
-    <Maximize2 className="h-4 w-4" />
-  )}
-  <span className="hidden sm:inline">
-    {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-  </span>
-</button>
+        <button
+          type="button"
+          onClick={handleToggleFullscreen}
+          title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-indigo-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-700"
+        >
+          {isFullscreen ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+          <span className="hidden sm:inline">
+            {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          </span>
+        </button>
         <button
           type="button"
           onClick={handleCopyLink}
-          className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-slate-700"
+          className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           {copiedLink ? (
-            <Check className="h-4 w-4 text-emerald-400" />
+            <Check className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
           ) : (
             <Copy className="h-4 w-4" />
           )}
@@ -928,7 +928,7 @@ useEffect(() => {
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4">
           {isScreenSharing && (
-            <section className="relative min-h-[200px] flex-1 overflow-hidden rounded-2xl border border-indigo-500/40 bg-slate-900">
+            <section className="relative min-h-[200px] flex-1 overflow-hidden rounded-2xl border border-indigo-400/50 bg-slate-200 dark:border-indigo-500/40 dark:bg-slate-900">
               <video
                 ref={screenVideoRef}
                 autoPlay
@@ -936,8 +936,8 @@ useEffect(() => {
                 muted
                 className="h-full max-h-[55vh] min-h-[200px] w-full object-contain"
               />
-              <div className="absolute left-3 top-3 rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 text-xs font-semibold">
-                <Monitor className="mr-2 inline h-4 w-4 text-indigo-300" />
+              <div className="absolute left-3 top-3 rounded-lg border border-slate-200 bg-white/90 px-3 py-2 text-xs font-semibold text-slate-900 shadow-xs dark:border-slate-700 dark:bg-slate-950/80 dark:text-white">
+                <Monitor className="mr-2 inline h-4 w-4 text-indigo-600 dark:text-indigo-300" />
                 Your screen is being shared
               </div>
             </section>
@@ -989,20 +989,20 @@ useEffect(() => {
         </main>
 
         {activeDrawer && (
-          <aside className="absolute inset-y-0 right-0 z-20 flex w-full max-w-sm flex-col border-l border-slate-800 bg-slate-900 shadow-2xl sm:relative sm:w-80 sm:shrink-0">
-            <div className="flex items-center justify-between border-b border-slate-800 p-4">
+          <aside className="absolute inset-y-0 right-0 z-20 flex w-full max-w-sm flex-col border-l border-slate-200 bg-white text-slate-900 shadow-2xl transition-colors dark:border-slate-800 dark:bg-slate-900 dark:text-white sm:relative sm:w-80 sm:shrink-0">
+            <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 {activeDrawer === 'participants' ? (
                   <>
-                    <Users className="h-4 w-4 text-indigo-300" />
-                    <h2 className="text-xs font-bold uppercase tracking-wider">
+                    <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                       Participants ({displayedParticipants.length})
                     </h2>
                   </>
                 ) : (
                   <>
-                    <MessageSquare className="h-4 w-4 text-indigo-300" />
-                    <h2 className="text-xs font-bold uppercase tracking-wider">
+                    <MessageSquare className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                       In-call chat
                     </h2>
                   </>
@@ -1012,7 +1012,7 @@ useEffect(() => {
               <button
                 type="button"
                 onClick={() => setActiveDrawer(null)}
-                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                 aria-label="Close panel"
               >
                 <X className="h-4 w-4" />
@@ -1024,32 +1024,32 @@ useEffect(() => {
                 {displayedParticipants.map((participant) => (
                   <div
                     key={participant.socketId || participant.uid}
-                    className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-800/50 p-3"
+                    className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/50"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xs font-bold">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-xs font-bold text-white">
                       {getInitials(participant.name || participant.email)}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold">
+                      <p className="truncate text-xs font-semibold text-slate-900 dark:text-white">
                         {participant.name || participant.email || 'Participant'}
                         {participant.isSelf ? ' (You)' : ''}
                       </p>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
                         {participant.uid === hostId || (participant.isSelf && isHost)
                           ? 'Host'
                           : 'Participant'}
                       </p>
                     </div>
 
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" title="Connected" />
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500 dark:bg-emerald-400" title="Connected" />
                   </div>
                 ))}
 
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 py-2.5 text-xs font-semibold text-indigo-300 transition hover:bg-slate-700"
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 py-2.5 text-xs font-semibold text-indigo-600 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300 dark:hover:bg-slate-700"
                 >
                   <Link2 className="h-4 w-4" />
                   Copy meeting link
@@ -1060,8 +1060,8 @@ useEffect(() => {
                 <div className="flex-1 space-y-3 overflow-y-auto p-3">
                   {chatMessages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-                      <MessageSquare className="h-8 w-8 text-slate-700" />
-                      <p className="text-xs font-medium text-slate-300">
+                      <MessageSquare className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
                         No messages yet
                       </p>
                       <p className="max-w-[220px] text-[11px] text-slate-500">
@@ -1072,13 +1072,13 @@ useEffect(() => {
                     chatMessages.map((message) => (
                       <div
                         key={message.id}
-                        className="rounded-xl border border-slate-800 bg-slate-800/60 p-3"
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/60"
                       >
                         <div className="mb-1.5 flex items-start justify-between gap-2">
-                          <span className="truncate text-xs font-semibold text-indigo-300">
+                          <span className="truncate text-xs font-semibold text-indigo-600 dark:text-indigo-300">
                             {message.sender || 'Participant'}
                           </span>
-                          <span className="shrink-0 text-[10px] text-slate-500">
+                          <span className="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">
                             {message.timestamp
                               ? new Date(message.timestamp).toLocaleTimeString([], {
                                   hour: '2-digit',
@@ -1087,7 +1087,7 @@ useEffect(() => {
                               : ''}
                           </span>
                         </div>
-                        <p className="whitespace-pre-wrap break-words text-xs leading-relaxed text-slate-200">
+                        <p className="whitespace-pre-wrap break-words text-xs leading-relaxed text-slate-700 dark:text-slate-200">
                           {message.text}
                         </p>
                       </div>
@@ -1097,14 +1097,14 @@ useEffect(() => {
 
                 <form
                   onSubmit={handleSendMessage}
-                  className="flex items-center gap-2 border-t border-slate-800 p-3"
+                  className="flex items-center gap-2 border-t border-slate-200 p-3 dark:border-slate-800"
                 >
                   <input
                     value={chatInput}
                     onChange={(event) => setChatInput(event.target.value)}
                     maxLength={4000}
                     placeholder="Message everyone…"
-                    className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
+                    className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
                   />
                   <button
                     type="submit"
@@ -1121,9 +1121,9 @@ useEffect(() => {
         )}
       </div>
 
-      <footer className="z-20 flex shrink-0 items-center justify-between gap-2 border-t border-slate-800 bg-slate-900/95 px-3 py-3 backdrop-blur-md sm:px-5">
+      <footer className="z-20 flex shrink-0 items-center justify-between gap-2 border-t border-slate-200 bg-white/95 px-3 py-3 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 sm:px-5">
         <div className="hidden min-w-0 flex-1 md:block">
-          <p className="truncate text-xs font-semibold text-slate-300">
+          <p className="truncate text-xs font-semibold text-slate-800 dark:text-slate-300">
             {meeting?.title || 'Meeting Room'}
           </p>
           <p className="mt-1 text-[10px] text-slate-500">
@@ -1141,7 +1141,7 @@ useEffect(() => {
             className={`rounded-2xl border p-3 transition ${
               isMicMuted
                 ? 'border-rose-500 bg-rose-600 text-white'
-                : 'border-slate-700 bg-slate-800 text-emerald-300 hover:bg-slate-700'
+                : 'border-slate-200 bg-slate-100 text-emerald-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-emerald-300 dark:hover:bg-slate-700'
             }`}
           >
             {isMicMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -1155,7 +1155,7 @@ useEffect(() => {
             className={`rounded-2xl border p-3 transition ${
               isVideoOff
                 ? 'border-rose-500 bg-rose-600 text-white'
-                : 'border-slate-700 bg-slate-800 text-indigo-300 hover:bg-slate-700'
+                : 'border-slate-200 bg-slate-100 text-indigo-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-indigo-300 dark:hover:bg-slate-700'
             }`}
           >
             {isVideoOff ? <VideoOff className="h-5 w-5" /> : <VideoIcon className="h-5 w-5" />}
@@ -1169,7 +1169,7 @@ useEffect(() => {
             className={`rounded-2xl border p-3 transition ${
               isScreenSharing
                 ? 'border-indigo-400 bg-indigo-600 text-white'
-                : 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
+                : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <Monitor className="h-5 w-5" />
@@ -1186,12 +1186,12 @@ useEffect(() => {
             title="Participants"
             className={`relative rounded-2xl border p-3 transition ${
               activeDrawer === 'participants'
-                ? 'border-indigo-400 bg-indigo-600'
-                : 'border-slate-700 bg-slate-800 hover:bg-slate-700'
+                ? 'border-indigo-400 bg-indigo-600 text-white'
+                : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <Users className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-500 px-1 text-[9px] font-bold">
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-indigo-500 px-1 text-[9px] font-bold text-white">
               {displayedParticipants.length}
             </span>
           </button>
@@ -1207,8 +1207,8 @@ useEffect(() => {
             title="In-call chat"
             className={`rounded-2xl border p-3 transition ${
               activeDrawer === 'chat'
-                ? 'border-indigo-400 bg-indigo-600'
-                : 'border-slate-700 bg-slate-800 hover:bg-slate-700'
+                ? 'border-indigo-400 bg-indigo-600 text-white'
+                : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <MessageSquare className="h-5 w-5" />
@@ -1234,7 +1234,7 @@ useEffect(() => {
           <button
             type="button"
             onClick={handleCopyLink}
-            className="flex items-center gap-1.5 text-xs text-slate-400 transition hover:text-white"
+            className="flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
           >
             <Link2 className="h-4 w-4" />
             Copy link
